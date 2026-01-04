@@ -1,0 +1,24 @@
+.app-container {
+  min-height: 100vh; /* Asegura que el contenedor ocupe al menos toda la altura de la pantalla */
+}
+
+.app-global-bg {
+  /* Imagen de fondo */
+  background: var(--bg-app); /* Cambia la ruta según la ubicación de tu imagen */
+  background-size: cover; /* Cubre todo el espacio disponible */
+  background-position: center center; /* Centra la imagen */
+  background-repeat: no-repeat; /* Evita que la imagen se repita */
+  background-attachment: fixed; /* La imagen se queda fija al hacer scroll */
+  background-color: rgba(0, 0, 0, 0.1);
+  background-blend-mode: multiply;
+  font-family: 'Montserrat', sans-serif;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden; /* Evita el scroll horizontal */
+  box-sizing: border-box; /* Incluye padding y border en el tamaño total */
+}

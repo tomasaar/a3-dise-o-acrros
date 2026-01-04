@@ -1,0 +1,627 @@
+/* Definición de variables de color */
+:root {
+  --bg-app: white;
+  --bg-navbar: linear-gradient(90deg, rgba(255, 255, 255, 0.993), rgba(255, 255, 255, 0.904), #ddf0f3ea);
+  --bg-sidebar: linear-gradient(180deg, #ffffffff, #ffffffff, #ffffffff, #ddf0f3, #B0E0E6);
+  --bg-drop: linear-gradient(180deg, #ffffffff, #ffffffff, #ffffffff, #ddf0f3, #B0E0E6);
+  --divider: linear-gradient(90deg,  #ddf0f3ea, #B0E0E6);
+  --bg-accent: #B0E0E6;
+  --text-catalog: #e2eff1;
+  --bg-accent-hover: #43bb85;
+  --border-button: #ddf0f3;
+  --sd-button-active: #22314ada;
+  --bg-hover: rgba(255, 255, 255, 0.15);
+  --text-primary: #1d1e1e;
+  --text-secondary: white;
+  --text-third: #000000;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --select-text: #22314a;
+  --webkit: rgba(34, 49, 74, 0.85);
+  --cdivider: #43bb85;
+  --slider-check: #B0E0E6;
+  --catalog: linear-gradient(90deg, #1d1e1e, #566681da);
+  --bg-coleccion: rgba(0, 0, 0, 0.95);
+}
+
+[data-theme="dark"] {
+  --bg-app: linear-gradient(90deg, #000000, #B0E0E6);
+  --bg-navbar: linear-gradient(90deg, 
+    rgba(0, 0, 0, 0.95) 0%, 
+    rgba(0, 0, 0, 0.8) 40%, 
+    rgba(176, 224, 230, 0.7) 100%
+);
+  --bg-sidebar: linear-gradient(90deg, #1d1e1e, #566681da);
+  --bg-drop: linear-gradient(180deg,#354561da, #1d1e1e);
+  --divider: linear-gradient(90deg, #1d1e1e, #566681da);
+  --bg-accent: #cfa055;
+  --text-catalog: white;
+  --bg-accent-hover: #43bb85;
+  --border-button: #cfa055;
+  --sd-button-active: #43bb85;
+  --bg-hover: rgba(255, 255, 255, 0.15);
+  --text-primary: #cfa055;
+  --text-secondary: #cfa055;
+  --text-third: #ffffff;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --select-text: #43bb85;
+  --webkit: #cfa055cb;
+  --cdivider: white;
+  --slider-check: #cfa055;
+  --catalog: linear-gradient(90deg, #ffffffff, rgba(255, 255, 255, 0.904), #ddf0f3ea);
+  --bg-coleccion: rgba(255, 255, 255, 0.904);
+}
+
+::-webkit-scrollbar {
+  width: 0px; /* Ancho del scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-accent); /* Hacemos el fondo del track transparente */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--webkit); /* Usamos el color de acento de tu tema */
+  border-radius: 20px; /* Bordes redondeados */
+  border: 0px solid transparent; /* Crea un efecto de padding */
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--webkit); /* Un color más brillante al pasar el mouse */
+}
+
+
+body {
+  font-family: 'Montserrat', sans-serif;
+}
+
+h1 { 
+  display: flex;
+  font-weight: lighter;
+  align-items: center;
+  font-size: 24px;
+  color:#ffffff;
+  justify-content: center;
+}
+
+/* Reseteo para quitar el contorno al hacer clic en botones */
+button:focus, button:active {
+  outline: none;
+  -webkit-tap-highlight-color: transparent; /* Para móviles */
+}
+
+/* Estilos generales para la barra de navegación */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-navbar);
+  box-shadow: 0 5px 8px var(--shadow-color);
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  box-sizing: border-box; /* Soluciona el problema de desbordamiento */
+  border-bottom: 1px solid var(--border-button);
+  border-radius: 0px 0px 10px 10px;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                background 0.4s ease, 
+                box-shadow 0.4s ease, 
+                border-bottom 0.4s ease;
+}
+
+.navbar.slide-in {
+    transform: translateX(0);
+    transition: 0.4s ease;
+}
+
+.navbar.slide-out {
+    transform: translateX(-100%);
+    transition: 0.4s ease;
+}
+
+.navbar.transparent-on-top {
+    background: transparent;
+    box-shadow: none;
+    border-bottom: none; /* Quitamos también la línea inferior */
+    border-radius: 0;
+    transition: background 0.6s ease, box-shadow 0.6s ease, border-bottom 0.6s ease, border-radius 0.6s ease;
+}
+
+/* 2. Asegurar que los elementos clave sean visibles sobre el banner */
+/* Hacemos el texto de la marca y el icono más brillantes o de un color que contraste con el fondo oscuro del carrusel */
+
+/* Color del texto del brand y del icono por defecto (para que se vea en el banner) */
+.navbar.transparent-on-top .brand-name,
+.navbar.transparent-on-top .sidebar-toggle-btn {
+    /* Usar un color claro (blanco) para contrastar con el fondo oscuro del carrusel */
+    color: #fff; 
+}
+
+/* En caso de que el icono sea una imagen con fondo, forzamos el color del icono (si es SVG o si usas el filtro) */
+.navbar.transparent-on-top .sidebar-icon {
+    /* Esto ayuda si el logo es oscuro por defecto */
+    filter: brightness(0) invert(1); 
+}
+
+/* Cuando el header tiene su fondo normal (no es transparente), revertimos los colores/filtros */
+.navbar:not(.transparent-on-top) .brand-name,
+.navbar:not(.transparent-on-top) .sidebar-toggle-btn {
+    color: var(--text-primary);
+}
+
+.navbar:not(.transparent-on-top) .sidebar-icon {
+    filter: none;
+}
+
+/* Contenedor para los enlaces de la izquierda y derecha */
+.nav-section {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.nav-section.center {
+  justify-content: center;
+}
+
+.nav-section.left {
+  justify-content: flex-start;
+}
+
+.nav-section.right {
+  justify-content: flex-end;
+}
+
+/* Estilo para los enlaces normales */
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: 8px 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: var(--bg-hover);
+}
+
+/* Estilo para el enlace de Home (icono) */
+.home-link {
+  padding: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary); /* Asegura que el ícono tenga el color correcto */
+}
+
+.home-link svg {
+  color: var(--text-primary);
+  transition: stroke 0.3s ease;
+}
+
+.home-link.active {
+  color: var(--text-secondary);
+  background-color: var(--bg-accent);
+  border-radius: 8px;
+}
+
+.home-link:hover {
+  box-shadow: 0 5px 8px var(--shadow-color);
+  border-radius: 8px;
+}
+
+/* Estilos para el botón del menú lateral */
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0px; /* Añadimos un poco de espacio para el hover */
+  border-radius: 8px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--bg-hover);
+  border-radius: 8px; 
+}
+
+.sidebar-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px; /* Aplicamos el círculo a la imagen */
+}
+.sidebar-logo-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px; /* Aplicamos el círculo a la imagen */
+}
+
+/* Sidebar Principal */
+.sidebar-aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 350px;
+    height: 100vh;
+    background: var(--bg-app); /* Color de fondo del sidebar */
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1999;
+}
+
+.brand-name-sidebar{
+  margin-left:-20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  display: inline-block;
+  line-height: 1;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: lighter;
+}
+
+/* Header Interno del Sidebar */
+.sidebar-header-internal {
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-divider {
+  margin: 10px 0;
+}
+
+
+.sidebar-line {
+  height: 1px;
+  background: var(--bg-accent);
+  width: 200px; /* Ancho fijo para asegurar visibilidad */
+  animation: expandLine 2.2s ease 0.2s forwards;
+
+}
+
+.sidebar-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--bg-accent);
+}
+
+/* Navegación */
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 30px;
+    gap: 10px;
+    font-size: 1.2rem;
+}
+
+.sidebar-link {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: lighter;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-third);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+    transform: translateX(10px);
+    color: var(--text-third); /* O tu color de acento */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.5s ease;
+}
+
+.sidebar-link active {
+    transform: translateX(10px);
+    color: #555; /* O tu color de acento */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.link-num {
+    font-size: 0.8rem;
+    font-weight: lighter;
+    color: var(--bg-accent);
+}
+
+/* Footer del Sidebar */
+.sidebar-footer {
+    padding: 30px;
+    border-top: 1px solid var(--bg-accent);
+}
+
+.sidebar-footer p {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-third);
+}
+
+/* Ajuste móvil */
+@media (max-width: 480px) {
+    .sidebar-aside {
+        width: 100%;
+    }
+}
+
+/* Texto de marca junto al logo (A + ccros) */
+.brand-name {
+  margin-left: -20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  display: inline-block;
+  line-height: 1;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: lighter;
+}
+
+/* Ajuste responsive: ocultar texto en pantallas muy pequeñas */
+@media (max-width: 420px) {
+  .brand-name {
+    display: none;
+  }
+  .sidebar-icon {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Layout wrapper for logo + brand to position dropdown */
+.logo-button-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  width: 50px;
+  height: 50px; /* para el dropdown absoluto */
+}
+
+/* Cuando estamos en la página de inicio, destacar el logo con border-bottom */
+.sidebar-toggle-btn {
+  position: relative;
+  z-index: 1002;
+}
+
+/* underline animation implemented with a centered pseudo-element
+   - when on home page (.is-home) the underline is visible
+   - on hover it expands horizontally from the center to the sides */
+.sidebar-toggle-btn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  height: 3px;
+  width: 44%;
+  background: var(--border-button);
+  border-radius: 4px;
+  transition: transform 280ms cubic-bezier(.2,.8,.2,1), width 280ms ease;
+  pointer-events: none;
+}
+
+.sidebar-toggle-btn.is-home::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* Hover expands the underline slightly beyond its base width */
+.logo-button-wrap:hover .sidebar-toggle-btn::after,
+.sidebar-toggle-btn:hover::after {
+  transform: translateX(-50%) scaleX(1.12);
+  width: 82%;
+}
+
+/* Overlay que aparece cuando el menú está abierto 
+
+/* Floating theme FAB (bottom-left) */
+.theme-fab-wrap {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.theme-fab {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--text-primary);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 180ms ease;
+}
+
+.theme-fab:active { transform: scale(0.98); }
+
+.theme-fab-menu {
+  position: absolute; /* position above the button */
+  bottom: calc(100% + 10px);
+  left: 0;
+  transform-origin: bottom left;
+  /* Use navbar variable for consistent background across themes */
+  background: var(--bg-navbar);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.36);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-fab-popover { display: inline-flex; align-items: center; gap: 12px; padding: 2px 6px; }
+
+.popover-switch { margin: 0 4px; }
+
+.theme-fab-item:hover { background: var(--bg-navbar); }
+
+.theme-fab-icon svg { color: var(--text-primary); }
+.theme-fab-item svg { color: var(--slider-check); }
+.theme-fab-popover svg { color: var(--text-primary); }
+.theme-fab-item-label { margin-left: 4px; font-size: 13px; }
+
+@media (max-width: 420px) {
+  .theme-fab { width: 46px; height: 46px; }
+}
+
+/* Estilos para el Sidebar */
+.sidebar {
+  height: 100%;
+  width: 250px;
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: -250px; /* Oculto por defecto */
+  background: var(--bg-sidebar);
+  transition: 0.3s ease-in-out;
+  box-shadow: 3px 0 6px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.open {
+  left: 0; /* Visible */
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-button);
+}
+
+.sidebar-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.sidebar-main-content {
+  padding: 20px 12px; /* Reducimos el padding horizontal */
+  flex-grow: 1; /* Ocupa el espacio disponible */
+}
+
+
+.sidebar-link {
+  padding: 12px 15px;
+  text-decoration: none;
+  font-size: 16px;
+  color: var(--text-primary);
+  display: flex; /* Usamos flex para alinear iconos si se añaden en el futuro */
+  align-items: center;
+  transition: background-color 0.2s ease-in-out;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px; /* Aumentamos el radio para consistencia */
+  margin-bottom: 8px; /* Espacio entre botones */
+  box-sizing: border-box; /* Soluciona el problema de desbordamiento */
+  border-bottom: 1px solid var(--border-button);
+}
+
+/* Overlay para el fondo cuando el sidebar está abierto */
+
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-third);
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--slider-check);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+input,select,textarea focus {
+  outline: none;
+}

@@ -1,0 +1,29 @@
+{
+  "appId": "com.glasssync.app",
+  "appName": "Glass Sync",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 6000,
+      "launchAutoHide": true,
+      "backgroundColor": "#43BB85",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  },
+  "assets": {
+    "icon": {
+      "src": "resources/icon.png",
+      "background": "#2a6d52"
+    },
+    "splash": {
+      "src": "resources/splash-final.png",
+      "backgroundColor": "#43BB85",
+      "resize": "cover"
+    }
+  }
+}

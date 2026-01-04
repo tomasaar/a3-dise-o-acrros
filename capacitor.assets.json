@@ -1,0 +1,10 @@
+{
+  "logo": "resources/icon.png",
+  "icon": {
+    "background": "#2a6d52"
+  },
+  "splash": {
+    "backgroundColor": "#2a6d52",
+    "logoRatio": 0.6
+  }
+}

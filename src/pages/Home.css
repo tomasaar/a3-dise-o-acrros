@@ -1,0 +1,992 @@
+/* ========================================= */
+/* 1. ESTRUCTURA DEL CARRUSEL (Full Screen) */
+/* ========================================= */
+
+.home-container {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: y proximity; /* Proximity para evitar que se "tranque" *//* Evita el salto visual del ancho cuando aparece el scrollbar */ /* Reserva el espacio del scrollbar para evitar saltos de layout */
+}
+
+/* Clase para bloquear el scroll hasta que se pulse Explorar */
+.home-container.scroll-locked {
+    overflow: hidden;
+}
+
+/* 2. El Carrusel es la primera parada del Snap */
+.carousel-container {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+    background: white;
+}
+
+.slide-logo-icon {
+    /* La altura debe coincidir con el tamaño de la fuente para que se vea alineado */
+    height: 1.8em; 
+    width: auto;
+    /* Espacio entre el logo y el texto restante (CROS) */
+    margin-right: -0.2em; 
+    opacity: 2; 
+}
+
+/* ========================================= */
+/* CARRUSEL ESTRUCTURA Y TRANSICIONES */
+/* ========================================= */
+
+/* El slide base que cubre toda la pantalla */
+.carousel-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    
+    /* CLAVE: Transición entre slides (fundido) */
+    transition: opacity 1.2s ease-in-out; 
+    will-change: opacity; /* Optimización GPU */
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    left: 0;
+}
+
+/* CLAVE: Slide activo (se muestra y tiene z-index superior) */
+.carousel-slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+/* Fondos de cada slide (gradientes) */
+.slide1 {
+    background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+}
+
+.slide2 {
+    background: linear-gradient(135deg, #e8e8e8 0%, #d4d4d4 100%);
+}
+
+.slide3 {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.slide-content {
+    position: relative;
+    z-index: 2;
+    text-align: left;
+    max-width: 1600px;
+    width: 100%;
+    padding: 0 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+/* ========================================= */
+/* ANIMACIONES DE CLAVE */
+/* ========================================= */
+
+/* Generales (usadas en múltiples slides) */
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes expandLine {
+    to {
+        width: 290px;
+    }
+}
+
+/* ========================================= */
+/* TIPOGRAFÍA Y ESTILOS BASE DE CONTENIDO */
+/* ========================================= */
+
+.slide-title,
+brand-nameH {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 6em;
+    letter-spacing: -2px;
+    margin: 0;
+    text-transform: uppercase;
+    color: white;
+    line-height: 0.9;
+    opacity: 0; /* Estado inicial oculto */
+    margin-top:5px;
+}
+
+.slide-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1em;
+    font-weight: 400;
+    letter-spacing: 4px;
+    margin: 0;
+    color: var(--bg-accent);
+    text-transform: uppercase;
+    opacity: 0; /* Estado inicial oculto */
+    transform: translateY(20px); /* Estado inicial para slideUp */
+}
+
+.slide-description {
+    font-size: 1.1em;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    margin: 0;
+    color: var(--bg-accent);
+    max-width: 600px;
+    line-height: 1.6;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* Divisor */
+.slide-divider {
+    display: flex;
+    align-items: flex-start;
+    justify-content: left;
+    margin: 24px 0;
+    opacity: 0;
+}
+
+.divider-line {
+    height: 1px;
+    background: var(--bg-sidebar);
+    width: 0; /* Estado inicial para expandLine */
+    transition: width 0.8s ease;
+}
+
+/* CTA */
+.slide-cta {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 56px;
+    background: var(--divider);
+    color: #fafafa;
+    text-decoration: none;
+    font-size: 0.95em;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.5s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+}
+
+.slide-cta:hover {
+    background: var(--bg-accent);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9);
+}
+
+
+/* ========================================= */
+/* REGLAS DE ANIMACIÓN ESPECÍFICAS (AL APLICAR CLASE 'ACTIVE') */
+/* ========================================= */
+
+/* --- Animaciones de Secuencia Común (Divisor, Descripción, CTA) --- */
+
+.carousel-slide.active .slide-divider {
+    animation: slideUp 0.8s ease 0.5s forwards;
+}
+
+.carousel-slide.active .divider-line {
+    animation: expandLine 1.2s ease 0.7s forwards;
+}
+
+.carousel-slide.active .slide-description {
+    animation: slideUp 0.8s ease 0.9s forwards;
+}
+
+.carousel-slide.active .slide-cta {
+    animation: slideUp 0.8s ease 0.8s forwards;
+}
+
+
+/* --- SLIDE 1: Bienvenida (Fade In) --- */
+
+.slide1.active .slide-subtitle {
+    animation: fadeIn 1s ease 0.3s forwards;
+}
+
+.slide1.active .slide-title {
+    animation: fadeIn 1.2s ease 0.5s forwards;
+}
+
+
+/* --- SLIDE 2: Catálogo (Slide From Sides) --- */
+
+.slide2 .slide-subtitle {
+    transform: translateX(-100px); /* Sobreescribe el default */
+}
+
+.slide2.active .slide-subtitle {
+    animation: slideFromLeft 0.8s ease 0.2s forwards;
+}
+
+.slide2 .slide-title {
+    transform: translateX(100px); /* Sobreescribe el default */
+}
+
+.slide2.active .slide-title {
+    animation: slideFromRight 0.8s ease 0.4s forwards;
+}
+
+
+/* --- SLIDE 3: Modelos 3D (Scale In) --- */
+
+.slide3 .slide-subtitle {
+    transform: scale(0.8); /* Sobreescribe el default */
+}
+
+.slide3.active .slide-subtitle {
+    animation: scaleIn 0.8s ease 0.2s forwards;
+}
+
+.slide3 .slide-title {
+    transform: scale(0.8); /* Sobreescribe el default */
+}
+
+.slide3.active .slide-title {
+    animation: scaleIn 1s ease 0.4s forwards;
+}
+
+
+/* ========================================= */
+/* CONTROLES (Dots, Flechas, Contador) */
+/* ========================================= */
+
+/* Dots */
+.carousel-controls {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.carousel-dot {
+    width: 50px;
+    height: 1px;
+    background: rgba(10, 10, 10, 0.3);
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.carousel-dot:hover {
+    background: rgba(10, 10, 10, 0.5);
+}
+
+.carousel-dot.active {
+    width: 150px;
+    background: var(--bg-accent);
+}
+
+/* Flechas */
+.carousel-arrows {
+    position: absolute;
+    bottom: 10%;
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 6%;
+    z-index: 10;
+}
+
+.arrow {
+    width: 100px;
+    height: 100px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    opacity: 0.4;
+    color: var(--bg-accent);
+}
+
+.arrow:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.arrow svg {
+    width: 80px;
+    height: 100px;
+    fill: var(--bg-accent);
+    stroke: var(--bg-accent);
+    stroke-width: 0.01px;
+    color: var(--bg-accent);
+}
+
+/* Contador */
+.slide-counter {
+    position: absolute;
+    top: 50%;
+    right: 6%;
+    transform: translateY(-50%);
+    z-index: 10;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2em;
+    font-weight: 300;
+    color: #0a0a0a;
+    letter-spacing: 2px;
+}
+
+.slide-counter .current {
+    font-size: 2em;
+    font-weight: 600;
+}
+
+.slide-counter .separator {
+    margin: 0 8px;
+    opacity: 0.3;
+}
+
+.slide-counter .total {
+    opacity: 0.3;
+}
+
+/* ========================================= */
+/* RESPONSIVE */
+/* ========================================= */
+
+@media (max-width: 1024px) {
+    .slide-title {
+        font-size: 6em;
+    }
+    .slide-counter {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .slide-title {
+        font-size: 3.5em;
+        letter-spacing: -1px;
+    }
+    .slide-subtitle {
+        font-size: 0.9em;
+        letter-spacing: 2px;
+    }
+    .slide-description {
+        font-size: 1em;
+    }
+    .slide-cta {
+        padding: 16px 40px;
+        font-size: 0.85em;
+    }
+    .arrow {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+.scroll-indicator {
+      position: absolute;
+      bottom: 3%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+
+    .scroll-indicator:hover {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    .scroll-indicator-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--bg-accent);
+    }
+
+    .scroll-indicator svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--bg-accent);
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-10px);
+      }
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+
+      /* Imagen fija que aparece después del carrusel */
+.fixed-parallax-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: -1; /* Totalmente detrás */
+}
+
+
+/* Ajustes de Secciones para que el fondo se vea */
+.dual-catalog-section{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    gap:15px;
+    width: 100%;
+    position: relative;
+    z-index: 5;
+    background: var(--bg-navbar); 
+    /* Backdrop-filter consume recursos, lo limitamos para fluidez */ 
+    border-top: 2px solid var(--bg-accent);
+    border-bottom: 2px solid var(--bg-accent);
+    min-height: 100vh;
+    transform: translateZ(0); /* Activa aceleración por hardware */
+    /* Agregado: Permite que el scroll se detenga aquí */
+}
+
+
+
+.highlights-section {
+    position: relative;
+    z-index: 5;
+    background: var(--bg-coleccion); 
+    /* Backdrop-filter consume recursos, lo limitamos para fluidez */ 
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    height: 80vh;
+    padding: 100px 5%;
+    transform: translateZ(0); /* Activa aceleración por hardware */
+}
+
+/* 3. Catalog Boxes: El secreto es el overflow y el zoom suave */
+.catalog-box {
+    position: relative;
+    overflow: hidden; /* Importante para que la imagen no se salga */
+    border-radius: 20px;
+    height: 500px;
+    display: flex;
+    align-items: flex-end;
+    padding: 40px;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    transition: box-shadow 0.4s ease;
+    width: 30%;
+
+}
+
+.catalog-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8) 100%);
+    z-index: 1;
+}
+
+.catalog-info {
+    position: relative;
+    z-index: 2;
+}
+
+.dual-title {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: lighter;
+    color: var(--text-third);
+    margin-left: 0px;
+}
+
+.highlights-title {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: lighter;
+    color: var(--bg-accent);
+}
+
+/* 4. Highlights Slider: Moderno y Elegante */
+.highlights-slider-wrapper {
+    position: relative;
+    width: 100%;
+    height: 500px; /* Altura fija para el slider */
+    margin-top: 50px;
+    /* Eliminamos overflow hidden para permitir efecto 3D si sale un poco */
+    /* overflow: hidden; */ 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px; /* CLAVE: Profundidad 3D */
+}
+
+.highlight-card-modern {
+    position: absolute;
+    /* Centrado absoluto inicial */
+    left: 50%; 
+    top: 50%;
+    margin-left: -32.5%; /* Mitad del ancho (65% / 2) */
+    margin-top: -225px; /* Mitad de la altura (450px / 2) */
+    width: 65%; /* Tarjetas más estrechas para ver las laterales */
+    height: 450px;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    padding: 0 8%;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4); /* Sombra optimizada: menos radio de blur */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Backface visibility para suavizar rotaciones */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform, opacity; /* CLAVE: Avisa al navegador que esto se moverá */
+    transform: translateZ(0); /* Fuerza renderizado en GPU */
+}
+
+.highlight-content-modern {
+    max-width: 100%;
+    color: white;
+    text-align: left; /* Centramos texto para elegancia */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.highlight-subtitle {
+    display: block;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--bg-accent);
+    margin-bottom: 10px;
+}
+
+.highlight-title-modern {
+    font-size: 4rem;
+    font-weight: lighter;
+    line-height: 1;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.highlight-desc-modern {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 30px;
+    max-width: 600px;
+}
+
+.highlight-btn-modern {
+    display: inline-block;
+    padding: 12px 30px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    background: rgba(0,0,0,0.6); /* Fondo sólido (más rápido) en lugar de blur */
+    width: 15%;
+}
+
+.highlight-btn-modern:hover {
+    background: white;
+    color: black;
+    border-color: white;
+}
+
+/* Controles del Slider Highlight */
+.highlight-controls {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 10;
+    z-index: 100;
+}
+
+.h-control-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15); /* Fondo sólido para evitar repintado */
+}
+
+.h-control-btn:hover {
+    background: white;
+    color: black;
+}
+
+.h-indicators {
+    display: flex;
+    gap: 8px;
+}
+
+.h-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.h-dot.active {
+    background: var(--bg-accent);
+    transform: scale(1.5);
+}
+
+@media (max-width: 768px) {
+    .highlight-title-modern { font-size: 2.5rem; }
+    .highlight-controls { 
+        /* Centrado horizontal con el método más robusto */
+        left: 50%; 
+        transform: translateX(-50%); 
+        bottom: 0px; 
+        right: auto; /* Anulamos la propiedad 'right' de la versión de escritorio */
+    }
+    .highlight-card-modern { 
+        padding: 5px; 
+        text-align: center; 
+        justify-content: center;
+        width: 85%; /* Más ancho en móvil para ver bien el contenido */
+        margin-left: -42.5%; /* Centrado correcto (mitad de 85%) */
+        height: 400px;
+    }
+    .highlight-content-modern { display: flex; flex-direction: column; align-items: left; }
+    
+    /* --- MEJORAS UX/UI MOBILE EXPLORE --- */
+
+    /* 1. Sección About: Más compacta y centrada */
+    .about-home-section {
+        padding: 80px 20px !important; /* Forzamos padding menor */
+        text-align: center;/* Altura flexible en móvil */
+    }
+    
+    .about-home-content h2 {
+        font-size: 2.2rem !important;
+        line-height: 1.2;
+        font-weight: lighter;
+    }
+    
+    .about-home-content p {
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    /* 2. Catálogo Dual: Apilado vertical (Columna) */
+    .dual-catalog-section {
+        flex-direction: column !important; /* Importante: apilar verticalmente */
+        height: auto !important;
+        gap: 30px !important;
+        display: flex !important; /* Aseguramos flex */
+    }
+    
+    .catalog-box {
+        width: 80% !important; /* Ocupar todo el ancho */
+        height: 350px !important; /* Altura cómoda para touch */
+        padding: 10px;
+    }
+    
+    .catalog-info h3 {
+        font-size: 1.8rem !important;
+    }
+
+    /* 3. Highlights: Ajuste de altura */
+    .highlights-section {
+        padding: 60px 20px !important;
+        height: auto !important;
+    }
+    
+    .highlights-slider-wrapper {
+        height: 450px !important;
+        margin-top: 30px;
+    }
+
+    /* 4. Footer: Apilado */
+    .footer-top {
+        flex-direction: column;
+        gap: 40px;
+        text-align: center;
+    }
+    
+    .footer-nav {
+        align-items: center;
+    }
+}
+
+/* --- ESTILOS BASE LIMPIOS (Desktop) --- */
+/* Reemplazamos las definiciones duplicadas/sucias del final por estas limpias */
+
+.about-home-section {
+    scroll-snap-align: start; /* Cada sección se detiene al inicio */
+    position: relative;
+    z-index: 5;
+    background: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 10%;
+}
+
+.about-home-content span {
+    font-weight: lighter;
+    color: white;
+    text-shadow: 0 10px 25px rgba(0, 0, 0, 0.432);
+}
+
+.about-home-content h2 {
+    font-size: 3rem;
+    margin-bottom: 40px;
+    font-weight: lighter;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.432);
+    color: white;
+}
+
+.about-home-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: lighter;
+    color: white;
+    text-shadow: 0 10px 25px rgba(0, 0, 0, 0.432);
+}
+
+
+/* Imágenes de fondo específicas */
+.women-box { background-image: url('../assets/woman-catalog.png'); }
+.men-box { background-image: url('../assets/explore-men.png'); }
+
+.catalog-box:hover { transform: scale(1.02); }
+
+.catalog-info h3 { font-size: 2rem; margin-bottom: 5px; color: white; font-weight: lighter; }
+.catalog-link {
+    color: white;
+    text-decoration: none;
+    border-bottom: 2px solid #fff;
+    padding-bottom: 15px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* ========================================= */
+/* FOOTER PREMIUM (INNOVADOR & IMPACTANTE) */
+/* ========================================= */
+
+.main-footer {
+    position: relative;
+    background: #050505; /* Negro profundo */
+    padding: 80px 5% 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    scroll-snap-align: start;
+    overflow: hidden; /* Para contener el texto gigante */
+    color: white;
+}
+
+.footer-content-wrapper {
+    position: relative;
+    z-index: 2; /* Por encima del texto gigante */
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Fila Superior: Marca y Newsletter */
+.footer-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 80px;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.footer-logo-text {
+    font-size: 3rem;
+    font-weight: lighter;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #fff, #aaa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.footer-mission {
+    max-width: 350px;
+    color: #888;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Newsletter Minimalista */
+.footer-newsletter h4 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    font-weight: lighter;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.newsletter-input-wrapper {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 10px;
+    width: 300px;
+}
+
+.newsletter-input-wrapper input {
+    background: transparent;
+    border: none;
+    color: white;
+    flex: 1;
+    font-size: 1rem;
+    outline: none;
+}
+
+.newsletter-input-wrapper input::placeholder { color: #555; }
+
+.newsletter-btn {
+    background: transparent;
+    border: none;
+    color: var(--bg-accent);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.newsletter-btn:hover { transform: translateX(5px); }
+
+/* Fila de Enlaces */
+.footer-links-row {
+    display: flex;
+    gap: 80px;
+    margin-bottom: 100px;
+    flex-wrap: wrap;
+}
+
+.footer-nav-col { display: flex; flex-direction: column; gap: 15px; }
+.footer-nav-col h4 { color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.5; }
+.footer-nav-col a { color: #ccc; text-decoration: none; font-size: 1rem; transition: all 0.3s ease; font-weight: lighter; }
+.footer-nav-col a:hover { color: var(--bg-accent); transform: translateX(5px); }
+
+/* Texto Gigante de Fondo (Impacto Visual) */
+.footer-giant-text {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 25vw; /* Gigante y responsivo */
+    font-weight: 200;
+    color: rgba(255, 255, 255, 0.02); /* Muy sutil */
+    pointer-events: none;
+    z-index: 1;
+    line-height: 0.8;
+    white-space: nowrap;
+    filter: blur(10px);
+}
+
+/* Barra Inferior */
+.footer-bottom-bar {
+    position: relative;
+    z-index: 2;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #555;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.footer-legal-links { display: flex; gap: 20px; }
+.footer-legal-links a { color: #555; text-decoration: none; transition: color 0.3s; }
+.footer-legal-links a:hover { color: white; }
+
+/* Ajustes Móviles Footer */
+@media (max-width: 768px) {
+    .footer-top-row { flex-direction: column; gap: 50px; }
+    .footer-links-row { gap: 40px; flex-direction: column; }
+    .newsletter-input-wrapper { width: 100%; }
+    .footer-bottom-bar { flex-direction: column; text-align: center; }
+    .footer-giant-text { font-size: 35vw; bottom: 20px; }
+}

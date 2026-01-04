@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Glass Sync</string>
+    <string name="title_activity_main">Glass Sync</string>
+    <string name="package_name">com.glasssync.app</string>
+    <string name="custom_url_scheme">com.glasssync.app</string>
+</resources>
