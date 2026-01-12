@@ -73,10 +73,10 @@
 
 
 .info-title {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: lighter;
   text-transform: uppercase;
-  padding: 10px;
+  padding: 20px;
   letter-spacing: -1px;
   text-shadow: 2px 4px 10px rgba(0,0,0,0.3);
 }
@@ -93,7 +93,7 @@
 .info-desc {
   font-size: 0.85rem;
   line-height: 1.5;
-  color: #444;
+  color: var(--text-third);
   margin-top: 10px;
 }
 
@@ -270,7 +270,7 @@
 /* 4. Control de Rotación (Abajo Derecha) */
 .rotation-control {
   position: absolute;
-  bottom: 100px;
+  bottom: 200px;
   right: 80px;
   pointer-events: auto;
 }
@@ -287,9 +287,93 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  bottom: 200px;
 }
 
 .round-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+
+/* --- ADAPTACIÓN MINIATURA PARA MÓVILES --- */
+@media (max-width: 768px) {
+  
+  /* Reducimos el tamaño general de las tarjetas */
+  .info-card {
+    max-width: 35%; /* Ajustado para que no ocupe toda la pantalla pero sea legible */
+    padding: 12px;
+    margin-top: 100px;
+  }
+
+  .info-card2 {
+    max-width: 70%;
+    padding: 5px;
+  }
+
+  /* Títulos más pequeños */
+  .info-title {
+    font-size: 1.1rem;
+    padding: 10px;
+  }
+
+  .info-title1 {
+    font-size: 0.9rem;
+  }
+
+  .info-price {
+    font-size: 1rem;
+  }
+
+  /* Ajuste de la Sidebar de botones */
+  .buttons-sidebar {
+    margin-top: 50px; /* Menos espacio superior */
+    gap: 8px;
+  }
+
+  .canvas-btn {
+    padding: 8px 15px;
+    font-size: 9px; /* Texto más pequeño */
+    letter-spacing: 1px;
+    min-width: 140px;
+  }
+
+  /* Submenús: Los pegamos más al botón para que no se salgan de la pantalla */
+  .submenu {
+    left: 150px; /* Reducido de 200px para que quepa en el ancho del móvil */
+    min-width: 120px;
+    padding: 5px;
+  }
+
+  .submenu-item {
+    padding: 10px;
+    font-size: 9px;
+  }
+
+  /* Selector de colores más compacto */
+  .color-selection-wrapper {
+    min-width: 130px;
+    max-height: 150px;
+  }
+
+  .color-option-btn {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .color-circle {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Botón de rotación más pequeño y mejor ubicado */
+  .rotation-control {
+    bottom: 220px; /* Subido para que no choque con el menú inferior si tienes uno */
+    right: 30px;
+  }
+
+  .round-btn {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
 }

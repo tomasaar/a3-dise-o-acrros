@@ -5,6 +5,7 @@
   --bg-sidebar: linear-gradient(180deg, #ffffffff, #ffffffff, #ffffffff, #ddf0f3, #B0E0E6);
   --bg-drop: linear-gradient(180deg, #ffffffff, #ffffffff, #ffffffff, #ddf0f3, #B0E0E6);
   --divider: linear-gradient(90deg,  #ddf0f3ea, #B0E0E6);
+  --sidebar: linear-gradient(90deg,  #e6f0f1fd,#ddf0f3fd, #B0E0E6);
   --bg-accent: #B0E0E6;
   --text-catalog: #e2eff1;
   --bg-accent-hover: #43bb85;
@@ -32,6 +33,7 @@
 );
   --bg-sidebar: linear-gradient(90deg, #1d1e1e, #566681da);
   --bg-drop: linear-gradient(180deg,#354561da, #1d1e1e);
+  --sidebar: linear-gradient(90deg, #000000, #73a8af);
   --divider: linear-gradient(90deg, #1d1e1e, #566681da);
   --bg-accent: #cfa055;
   --text-catalog: white;
@@ -248,11 +250,12 @@ button:focus, button:active {
     left: 0;
     width: 350px;
     height: 100vh;
-    background: var(--bg-app); /* Color de fondo del sidebar */
+    background: var(--sidebar); /* Color de fondo del sidebar */
     z-index: 2000;
     display: flex;
     flex-direction: column;
     box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+    transition: all 0.12s ease;
 }
 
 .sidebar-overlay {
@@ -312,9 +315,9 @@ button:focus, button:active {
     font-size: 1.2rem;
 }
 
-.sidebar-link {
+.sidebar-nav .sidebar-link {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: lighter;
     text-transform: uppercase;
     text-decoration: none;
@@ -322,10 +325,10 @@ button:focus, button:active {
     display: flex;
     align-items: center;
     gap: 15px;
-    transition: all 0.3s ease;
+    transition: all 0.5s ease;
 }
 
-.sidebar-link:hover {
+.sidebar-nav .sidebar-link:hover {
     transform: translateX(10px);
     color: var(--text-third); /* O tu color de acento */
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -336,6 +339,7 @@ button:focus, button:active {
     transform: translateX(10px);
     color: #555; /* O tu color de acento */
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.5s ease;
 }
 
 .link-num {

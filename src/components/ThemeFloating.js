@@ -24,7 +24,7 @@ const MoonSvg = ({ className }) => (
 
 function ThemeFloating() {
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -32,7 +32,7 @@ function ThemeFloating() {
 
   useEffect(() => {
     function onThemeChange() {
-      setTheme(localStorage.getItem('theme') || 'dark');
+      setTheme(localStorage.getItem('theme') || 'light');
     }
     window.addEventListener('themeChange', onThemeChange);
     return () => window.removeEventListener('themeChange', onThemeChange);

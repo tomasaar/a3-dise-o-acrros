@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSnapshot } from 'valtio';
 import state from '../store'; 
-import CanvasModel from '../components/Canvas';
 import logoIcon from '../assets/logoB.png';
 import './Modelado3d.css';
 import banner3d from '../assets/banner3d.png'; // Ajusta la ruta relativa según tu estructura
+
+const CanvasModel = lazy(() => import('../components/Canvas'));
 
 const slideAnimation = (direction) => ({
   initial: {
@@ -47,7 +48,7 @@ const Modelado3d = () => {
                 className="intro3d-logo" 
                 alt="A"
               />
-              <span className="intro3d-brand">CROS</span>
+              <span className="intro3d-brand notranslate">CROS</span>
               <br />
               <span className="intro3d-elite">ELITE 3D</span>
             </h1>
@@ -85,7 +86,11 @@ const Modelado3d = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }} 
           >
-            <CanvasModel />
+            <Suspense fallback={
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%'}}>Cargando escena 3D...</div>
+            }>
+              <CanvasModel />
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

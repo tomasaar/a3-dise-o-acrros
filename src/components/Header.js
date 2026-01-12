@@ -9,7 +9,7 @@ import logoDark from '../assets/logo2.png';
 
 function HeaderComponent() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     // isScrolled ahora representa si el header debe estar visible/con fondo
     const [isScrolled, setIsScrolled] = useState(false);
     // NUEVO ESTADO: Para forzar la re-animación al pulsar "Explorar"
@@ -27,7 +27,7 @@ function HeaderComponent() {
     // Escucha cambios globales de tema
     useEffect(() => {
         function onThemeChange() {
-            setTheme(localStorage.getItem('theme') || 'dark');
+            setTheme(localStorage.getItem('theme') || 'light');
         }
         window.addEventListener('themeChange', onThemeChange);
         return () => window.removeEventListener('themeChange', onThemeChange);
@@ -114,7 +114,7 @@ function HeaderComponent() {
                     className="sidebar-icon" 
                 />
             </button>
-            <span className="brand-name">CROS</span>
+            <span className="brand-name notranslate">CROS</span>
         </div>
     );
 
@@ -179,7 +179,7 @@ function HeaderComponent() {
                             <div className="sidebar-header-internal">
                                 <div className="logo-button-wrap">
                                     <img src={theme === 'dark' ? logoDark : logoIcon} className="sidebar-logo-img" alt="Logo" />
-                                    <span className="brand-name-sidebar">CROS</span>
+                                    <span className="brand-name-sidebar notranslate">CROS</span>
                                 </div>
                                 <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)}>
                                     ✕
@@ -203,7 +203,7 @@ function HeaderComponent() {
                             </nav>
 
                             <div className="sidebar-footer">
-                                <p>ACROS ELITE PERFORMANCE © 2025</p>
+                                <p><span className="notranslate">ACROS</span> ELITE PERFORMANCE © 2025</p>
                             </div>
                         </motion.div>
                     </>

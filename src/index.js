@@ -7,7 +7,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 // Ensure the body has a data-theme from the very start so CSS variables are consistent
-const initialTheme = localStorage.getItem('theme') || 'dark';
+const initialTheme = localStorage.getItem('theme') || 'light';
 document.body.setAttribute('data-theme', initialTheme);
 
 root.render(

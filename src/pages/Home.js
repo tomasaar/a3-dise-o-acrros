@@ -22,7 +22,7 @@ const slidesContent = [
                     className="slide-logo-icon" 
                     alt="A"
                 />
-                <span className="brand-nameH">CROS</span> 
+                <span className="brand-nameH notranslate">CROS</span> 
             </>
         ),
         description: "Descubre el futuro del diseño de ropa deportivo",
@@ -43,7 +43,7 @@ const slidesContent = [
         title: "MODELOS 3D",
         description: "Visualiza cada detalle de nuestros diseños en 360 grados",
         cta: "Ver en 3D",
-        ctaLink: "/modelo3d",
+        ctaLink: "/Modelado3d",
         className: "slide3",
         backgroundImage: slide3
     },
@@ -109,13 +109,13 @@ const StaggeredText = ({ text, className }) => (
         whileInView="visible"
         viewport={{ once: true, amount: 0.25 }} 
     >
-        {text.split("").map((char, index) => (
+        {text.split(' ').map((word, index) => (
             <motion.span 
                 key={index} 
-                variants={letterVariants} 
-                style={{ display: "inline-block", whiteSpace: "pre" }}
+                variants={letterVariants}
+                className="staggered-word"
             >
-                {char}
+                {word}
             </motion.span>
         ))}
     </motion.h2>
@@ -180,6 +180,78 @@ const highlightsContent = [
     }
 ];
 
+// --- COMPONENTES OPTIMIZADOS PARA CARGA DE IMÁGENES ---
+
+const CarouselSlide = ({ slide, isActive }) => {
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = slide.backgroundImage;
+        img.onload = () => setLoaded(true);
+    }, [slide.backgroundImage]);
+
+    return (
+        <div className={`carousel-slide ${slide.className} ${isActive ? 'active' : ''}`}>
+            {/* Capa de Fondo: Placeholder + Imagen con Fade */}
+            <div className="carousel-slide-placeholder">
+                <div 
+                    className={`carousel-slide-image ${loaded ? 'loaded' : ''}`}
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${slide.backgroundImage})`,
+                    }}
+                />
+            </div>
+
+            <div className="slide-content">
+                <p className="slide-subtitle">{slide.subtitle}</p>
+                <h1 className="slide-title">{slide.title}</h1>
+                <div className="slide-divider">
+                    <div className="divider-line"></div>
+                </div>
+                <p className="slide-description">{slide.description}</p>
+                {slide.cta && slide.ctaLink && (
+                    <Link to={slide.ctaLink} className="slide-cta">
+                        {slide.cta}
+                    </Link>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const HighlightCard = ({ item, position, onClick, variants, contentVariants }) => {
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = item.image;
+        img.onload = () => setLoaded(true);
+    }, [item.image]);
+
+    return (
+        <motion.div
+            className={`highlight-card-modern ${position}`}
+            initial="center"
+            animate={position}
+            variants={variants}
+            onClick={onClick}
+        >
+            {/* Imagen de fondo con transición */}
+            <div className={`highlight-card-bg ${loaded ? 'loaded' : ''}`} style={{
+                backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${item.image})`,
+            }} />
+
+            <motion.div className="highlight-content-modern highlight-content-wrapper" variants={contentVariants}>
+                <span className="highlight-subtitle">{item.subtitle}</span>
+                <h3 className="highlight-title-modern notranslate">{item.title}</h3>
+                <p className="highlight-desc-modern">{item.description}</p>
+                <Link to="/catalog" className="highlight-btn-modern">Ver Detalles</Link>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 function Home() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [showCarousel, setShowCarousel] = useState(true);
@@ -188,6 +260,14 @@ function Home() {
     const totalSlides = slidesContent.length;
     const prevScrolledState = useRef(null); // Optimización: null para forzar el evento inicial
     const autoPlayIntervalTime = 8000;
+
+    // Estado para carga del fondo fijo
+    const [bgFixedLoaded, setBgFixedLoaded] = useState(false);
+    useEffect(() => {
+        const img = new Image();
+        img.src = bgFixed;
+        img.onload = () => setBgFixedLoaded(true);
+    }, []);
 
     // NUEVO: useLayoutEffect se ejecuta síncronamente después de todas las mutaciones del DOM.
     // Esto garantiza que el scroll se resetee a 0 EXACTAMENTE cuando el carrusel desaparece,
@@ -337,33 +417,11 @@ function Home() {
             {showCarousel && (
                 <main className="carousel-container">
                     {slidesContent.map((slide, index) => (
-                        <div 
+                        <CarouselSlide 
                             key={index} 
-                            className={`carousel-slide ${slide.className} ${index === currentSlide ? 'active' : ''}`} 
-                            style={{ 
-                                backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${slide.backgroundImage})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat',
-                            }}
-                        >
-                            <div className="slide-content">
-                                <p className="slide-subtitle">{slide.subtitle}</p>
-                                <h1 className="slide-title">{slide.title}</h1>
-                                
-                                <div className="slide-divider">
-                                    <div className="divider-line"></div>
-                                </div>
-                                
-                                <p className="slide-description">{slide.description}</p>
-                                
-                                {slide.cta && slide.ctaLink && (
-                                    <Link to={slide.ctaLink} className="slide-cta">
-                                        {slide.cta}
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
+                            slide={slide} 
+                            isActive={index === currentSlide} 
+                        />
                     ))}
 
                     <div className="carousel-arrows">
@@ -394,9 +452,11 @@ function Home() {
 
             {/* SECCIÓN FONDO FIJO */}
             <div 
-                className="fixed-parallax-bg" 
-                style={{ backgroundImage: `url(${bgFixed})` }}
-            ></div>
+                className={`fixed-parallax-bg ${bgFixedLoaded ? 'loaded' : ''}`}
+                style={{ 
+                    backgroundImage: `url(${bgFixed})`,
+                }}
+            />
 
             {/* Wrapper para contenido Explore */}
             <div id="exploreSection">
@@ -411,7 +471,25 @@ function Home() {
                 >
                     <motion.div className="about-home-content" variants={containerVariants}>
                         <motion.span className="section-tag" variants={itemVariants}>Nuestra Marca</motion.span>
-                        <StaggeredText text="ACROS: Rendimiento sin Límites" />
+                        <motion.h2
+                            variants={letterContainerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.25 }}
+                        >
+                            <motion.span className="notranslate staggered-word" variants={letterVariants}>
+                                ACROS:
+                            </motion.span>
+                            <motion.span variants={letterVariants} className="staggered-word">
+                                Rendimiento
+                            </motion.span>
+                            <motion.span variants={letterVariants} className="staggered-word">
+                                sin
+                            </motion.span>
+                            <motion.span variants={letterVariants} style={{ display: 'inline-block' }}>
+                                Límites
+                            </motion.span>
+                        </motion.h2>
                         <motion.p variants={itemVariants}>
                             Nacimos para desafiar los estándares de la ropa deportivo. Cada costura y cada material están diseñadas para ofrecer una experiencia premium en cada paso.
                         </motion.p>
@@ -481,25 +559,14 @@ function Home() {
                             };
 
                             return (
-                                <motion.div
+                                <HighlightCard 
                                     key={item.id}
-                                    className="highlight-card-modern"
-                                    initial="center"
-                                    animate={position}
-                                    variants={card3DVariants}
+                                    item={item}
+                                    position={position}
                                     onClick={handleCardClick}
-                                    style={{ 
-                                        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${item.image})`,
-                                        cursor: position === 'center' ? 'default' : 'pointer' // Cursor interactivo en laterales
-                                    }}
-                                >
-                                    <motion.div className="highlight-content-modern" variants={content3DVariants}>
-                                        <span className="highlight-subtitle">{item.subtitle}</span>
-                                        <h3 className="highlight-title-modern">{item.title}</h3>
-                                        <p className="highlight-desc-modern">{item.description}</p>
-                                        <Link to="/catalog" className="highlight-btn-modern">Ver Detalles</Link>
-                                    </motion.div>
-                                </motion.div>
+                                    variants={card3DVariants}
+                                    contentVariants={content3DVariants}
+                                />
                             );
                         })}
 
@@ -536,53 +603,72 @@ function Home() {
                     </motion.div>
                 </motion.section>
 
-                {/* 6. FOOTER */}
+                {/* 6. FOOTER MEJORADO */}
                 <footer className="main-footer">
+                    {/* Fondo sutil que se adapta al tema mediante opacidad y currentColor */}
+                    <div className="footer-bg-overlay" />
+                    <div className="footer-top-line" />
+
                     <div className="footer-content-wrapper">
-                        <div className="footer-top-row">
+                        
+                        {/* Top Section: Brand & Newsletter */}
+                        <div className="footer-top-section">
                             <div className="footer-brand-area">
-                                <h2 className="footer-logo-text">ACROS</h2>
-                                <p className="footer-mission">Redefiniendo el rendimiento a través de la innovación y el diseño de precisión.</p>
+                                <motion.h2 
+                                    className="footer-logo-text notranslate" 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                >
+                                    ACROS
+                                </motion.h2>
+                                <p className="footer-mission">
+                                    Ingeniería de precisión para el atleta moderno. <br/>
+                                    Donde la estética se encuentra con el rendimiento absoluto.
+                                </p>
                             </div>
-                            <div className="footer-newsletter">
-                                <h4>Únete a la Élite</h4>
+
+                            <div className="footer-newsletter-modern">
+                                <h4 className="footer-newsletter-title">Únete al Inner Circle</h4>
                                 <div className="newsletter-input-wrapper">
-                                    <input type="email" placeholder="Tu correo electrónico" />
-                                    <button className="newsletter-btn">→</button>
+                                    <input 
+                                        type="email" 
+                                        placeholder="Tu correo electrónico" 
+                                        className="newsletter-input"
+                                    />
+                                    <button className="newsletter-submit-btn">→</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="footer-links-row">
+                        {/* Links Grid */}
+                        <div className="footer-links-grid">
                             <div className="footer-nav-col">
-                                <h4>Explorar</h4>
-                                <Link to="/catalog">Catálogo</Link>
-                                <Link to="/modelado3d">Experiencia 3D</Link>
-                                <Link to="/about">Nuestra Historia</Link>
+                                <h4 className="footer-col-title">Explorar</h4>
+                                <div className="footer-col-links">
+                                    <Link to="/catalog" className="footer-link-item">Catálogo</Link>
+                                    <Link to="/modelado3d" className="footer-link-item">Experiencia 3D</Link>
+                                    <Link to="/about" className="footer-link-item">Nuestra Historia</Link>
+                                </div>
                             </div>
                             <div className="footer-nav-col">
-                                <h4>Soporte</h4>
-                                <Link to="/contact">Contacto</Link>
-                                <Link to="/shipping">Envíos</Link>
-                                <Link to="/returns">Devoluciones</Link>
-                            </div>
-                            <div className="footer-nav-col">
-                                <h4>Social</h4>
-                                <a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram</a>
-                                <a href="https://twitter.com" target="_blank" rel="noreferrer">Twitter</a>
-                                <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
+                                <h4 className="footer-col-title">Social</h4>
+                                <div className="footer-col-links">
+                                    <a href="https://instagram.com" target="_blank" rel="noreferrer" className="footer-link-item">Instagram</a>
+                                    <a href="https://twitter.com" target="_blank" rel="noreferrer" className="footer-link-item">Twitter / X</a>
+                                    <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="footer-link-item">LinkedIn</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Texto Gigante de Fondo */}
-                    <div className="footer-giant-text">ACROS</div>
-
-                    <div className="footer-bottom-bar">
-                        <p>© 2025 ACROS Premium Sportswear. Todos los derechos reservados.</p>
-                        <div className="footer-legal-links">
-                            <Link to="/privacy">Privacidad</Link>
-                            <Link to="/terms">Términos</Link>
+                        {/* Bottom Bar */}
+                        <div className="footer-bottom-container">
+                            <p>© 2025 <span className="notranslate">ACROS</span> Premium Sportswear.</p>
+                            <div className="footer-legal-wrapper">
+                                <Link to="/privacy" className="footer-legal-link">Privacidad</Link>
+                                <Link to="/terms" className="footer-legal-link">Términos</Link>
+                                <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="footer-top-btn">↑ TOP</button>
+                            </div>
                         </div>
                     </div>
                 </footer>

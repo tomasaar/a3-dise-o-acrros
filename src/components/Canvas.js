@@ -1,6 +1,6 @@
 import React, { useRef, Suspense, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, ContactShadows, Html } from '@react-three/drei';
+import { Canvas, useThree } from '@react-three/fiber';
+import { OrbitControls, ContactShadows, Html, Preload } from '@react-three/drei';
 import { useSnapshot } from 'valtio';
 import { AnimatePresence, motion } from 'framer-motion';
 import * as THREE from 'three'; 
@@ -19,7 +19,7 @@ const garmentDetails = {
     description: "Tecnología de compresión avanzada que mejora la circulación y reduce la fatiga muscular."
   },
   racerback: {
-    name: "Racerback Tank",
+    name: "Racerback",
     price: "$35.00",
     description: "Corte atlético diseñado para máxima libertad de movimiento."
   },
@@ -30,27 +30,60 @@ const garmentDetails = {
   }
 };
 
-const Scene = () => {
+const Scene = ({ isMobile, visible }) => {
   const snap = useSnapshot(state);
   const groupRef = useRef();
+  const { invalidate } = useThree();
 
-  useFrame((state, delta) => {
-    if (!groupRef.current) return;
-    const target = snap.intro ? 0 : (snap.targetRotation || 0);
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(
-      groupRef.current.rotation.y,
-      target,
-      0.05
-    );
+  // Controlled animation loop (max ~30 FPS) that only runs when `visible` is true
+  useEffect(() => {
+    let mounted = true;
+    let rafId = null;
+    let last = performance.now();
+    const targetFps = 30;
+    const frameDuration = 1000 / targetFps;
 
-    // NUEVO: Animación de entrada (Escala suave de 0.1 a 1)
-    // Usamos lerp para que el modelo "crezca" suavemente al montarse
-    // El vector (1,1,1) es el tamaño final. 0.06 es la velocidad del efecto.
-    groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.06);
-  });
+    function loop(now) {
+      if (!mounted) return;
+      const delta = now - last;
+      if (delta >= frameDuration) {
+        last = now - (delta % frameDuration);
+
+        if (groupRef.current) {
+          const target = snap.intro ? 0 : (snap.targetRotation || 0);
+          groupRef.current.rotation.y = THREE.MathUtils.lerp(
+            groupRef.current.rotation.y,
+            target,
+            0.05
+          );
+
+          const lerpFactor = isMobile ? 0.12 : 0.06;
+          groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), lerpFactor);
+        }
+
+        // Only request a render when visible
+        if (visible) invalidate();
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+
+    if (visible) {
+      rafId = requestAnimationFrame(loop);
+    }
+
+    // pause when not visible
+    if (!visible && rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
+    return () => {
+      mounted = false;
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [visible, snap.intro, snap.targetRotation, isMobile, invalidate]);
 
   return (
-    // Iniciamos con escala muy pequeña para el efecto de entrada
     <group ref={groupRef} scale={[0.01, 0.01, 0.01]}>
       <ModeloBase />
       {snap.currentModel === 'compression' && <Compression />}
@@ -67,6 +100,8 @@ const CanvasModel = () => {
   
   // Detectar móvil para ajustar la escala de la UI y la cámara
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const wrapperRef = useRef();
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -74,20 +109,56 @@ const CanvasModel = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Observe visibility of the canvas wrapper to pause rendering when offscreen
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting);
+        });
+      },
+      { root: null, threshold: 0.1 }
+    );
+    observer.observe(wrapperRef.current);
+    return () => observer.disconnect();
+  }, [wrapperRef]);
+
   return (
-    <div className="canvas-wrapper absolute inset-0">
+    <div ref={wrapperRef} className="canvas-wrapper absolute inset-0">
       <Canvas
-        shadows
-        dpr={[1, 1.5]}
+        frameloop="demand"
+        shadows={!isMobile} // Desactivar sombras en móvil para mayor rendimiento
+        dpr={isMobile ? [1, 1] : [1, 1.5]} // Limitar device-pixel-ratio en móvil
         camera={{ position: isMobile ? [0, 1.9, 4] : [0, 1.9, 2.5], fov: 35 }}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
+        gl={{ 
+          antialias: !isMobile, // Desactivar antialiasing en móvil
+          powerPreference: "high-performance" 
+        }}
       >
         <ambientLight intensity={0.9} />
-        <spotLight position={[5, 10, 5]} angle={0.15} penumbra={1} intensity={25} castShadow />
-        <directionalLight castShadow position={[2, 4, 5]} intensity={1.5} />
+        {/* Renderizar luces y sombras costosas solo en escritorio */}
+        {!isMobile && (
+          <>
+            <spotLight position={[5, 10, 5]} angle={0.15} penumbra={1} intensity={25} castShadow />
+            <directionalLight castShadow position={[2, 4, 5]} intensity={1.5} />
+          </>
+        )}
+        {/* Usar una luz más simple y menos costosa para móvil */}
+        {isMobile && <directionalLight position={[2, 4, 5]} intensity={2.5} />}
 
-        <Suspense fallback={null}>
-          <Scene />
+        <Suspense fallback={
+          <Html center>
+            <div style={{
+              color: snap.color === '#000000' ? 'white' : 'black',
+              fontSize: '14px',
+              fontFamily: 'sans-serif'
+            }}>
+              Cargando...
+            </div>
+          </Html>
+        }>
+          <Scene isMobile={isMobile} visible={isVisible} />
 
           {!snap.intro && (
             <Html 
@@ -116,8 +187,8 @@ const CanvasModel = () => {
                     exit={{ opacity: 0, y: -25 }}
                     transition={{ duration: 0.4, ease: "easeInOut" }}
                   >
-                    <h2 className="info-title1">Acros-Models</h2>
-                    <h2 className="info-title">{currentInfo.name}</h2>
+                    <h2 className="info-title1 notranslate">Acros-Models</h2>
+                    <h2 className="info-title notranslate">{currentInfo.name}</h2>
                     <p className="info-price">{currentInfo.price}</p>
                     <p className="info-desc">{currentInfo.description}</p>
                   </motion.div>
@@ -223,7 +294,9 @@ const CanvasModel = () => {
             <meshStandardMaterial color="#ffffff" /> 
           </mesh>
 
-          <ContactShadows position={[0, 0, 0]} opacity={0.6} scale={10} blur={2.5} far={1} />
+          {/* Renderizar sombras de contacto solo en escritorio */}
+          {!isMobile && <ContactShadows position={[0, 0, 0]} opacity={0.6} scale={10} blur={2.5} far={1} />}
+          <Preload all />
         </Suspense>
 
         <OrbitControls 

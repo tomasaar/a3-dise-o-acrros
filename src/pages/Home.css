@@ -207,7 +207,7 @@ brand-nameH {
     margin-top: 10px;
     padding: 10px 56px;
     background: var(--divider);
-    color: #fafafa;
+    color: var(--text-third);
     text-decoration: none;
     font-size: 0.95em;
     letter-spacing: 1px;
@@ -222,6 +222,7 @@ brand-nameH {
 .slide-cta:hover {
     background: var(--bg-accent);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9);
+    transition: all 0.5s ease;
 }
 
 
@@ -490,6 +491,12 @@ brand-nameH {
     z-index: -1; /* Totalmente detrás */
 }
 
+.fixed-parallax-bg {
+    background-color: #000;
+    transition: opacity 1s ease-in-out;
+    opacity: 0;
+}
+.fixed-parallax-bg.loaded { opacity: 1; }
 
 /* Ajustes de Secciones para que el fondo se vea */
 .dual-catalog-section{
@@ -604,6 +611,11 @@ brand-nameH {
     will-change: transform, opacity; /* CLAVE: Avisa al navegador que esto se moverá */
     transform: translateZ(0); /* Fuerza renderizado en GPU */
 }
+
+.highlight-card-modern.center { cursor: default; }
+.highlight-card-modern { cursor: pointer; background-color: #1a1a1a; overflow: hidden; }
+
+.highlight-content-wrapper { position: relative; z-index: 1; }
 
 .highlight-content-modern {
     max-width: 100%;
@@ -792,6 +804,48 @@ brand-nameH {
     }
 }
 
+/* --- Loading Styles --- */
+.carousel-slide-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-color: #0f0f0f;
+}
+
+.carousel-slide-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 1.2s ease-in-out, transform 1.5s ease-in-out;
+}
+.carousel-slide-image.loaded { opacity: 1; transform: scale(1); }
+
+.highlight-card-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+    z-index: 0;
+}
+.highlight-card-bg.loaded { opacity: 1; }
+
+.staggered-word {
+    display: inline-block;
+    padding-right: 0.25em;
+}
+
 /* --- ESTILOS BASE LIMPIOS (Desktop) --- */
 /* Reemplazamos las definiciones duplicadas/sucias del final por estas limpias */
 
@@ -853,12 +907,12 @@ brand-nameH {
 
 .main-footer {
     position: relative;
-    background: #050505; /* Negro profundo */
+    background: var(--divider); /* Negro profundo */
     padding: 80px 5% 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     scroll-snap-align: start;
     overflow: hidden; /* Para contener el texto gigante */
-    color: white;
+    color: var(--text-third); /* Fallback */
 }
 
 .footer-content-wrapper {
@@ -866,64 +920,76 @@ brand-nameH {
     z-index: 2; /* Por encima del texto gigante */
     max-width: 1400px;
     margin: 0 auto;
+    margin: 0 auto; 
+    padding: 0 40px;
+    position: relative;                        
 }
+.footer-bg-overlay { position: absolute; background: currentColor; opacity: 0.03; pointer-events: none; }
+.footer-top-line { position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, currentColor, transparent); opacity: 0.2; }
 
 /* Fila Superior: Marca y Newsletter */
-.footer-top-row {
+.footer-top-section {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: flex-end;
     margin-bottom: 80px;
     flex-wrap: wrap;
     gap: 40px;
 }
 
+.footer-brand-area { max-width: 500px; }
+
 .footer-logo-text {
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: lighter;
-    letter-spacing: -1px;
+    letter-spacing: -2px;
     margin-bottom: 20px;
-    background: linear-gradient(90deg, #fff, #aaa);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    /* Eliminamos gradiente antiguo para usar currentColor o estilo limpio */
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: currentColor;
 }
 
 .footer-mission {
-    max-width: 350px;
-    color: #888;
+    font-size: 1.1rem;
+    opacity: 0.7;
     line-height: 1.6;
-    font-size: 0.95rem;
+    max-width: 400px;
 }
 
 /* Newsletter Minimalista */
-.footer-newsletter h4 {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    font-weight: lighter;
+.footer-newsletter-modern { flex: 1; max-width: 400px; }
+
+.footer-newsletter-title {
+    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    opacity: 0.8;
 }
 
 .newsletter-input-wrapper {
     display: flex;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid currentColor;
     padding-bottom: 10px;
-    width: 300px;
+    opacity: 0.9;
+    width: 100%;
 }
 
-.newsletter-input-wrapper input {
+.newsletter-input {
     background: transparent;
     border: none;
-    color: white;
+    color: currentColor;
     flex: 1;
     font-size: 1rem;
     outline: none;
+    padding: 5px 0;
 }
 
-.newsletter-input-wrapper input::placeholder { color: #555; }
+.newsletter-input::placeholder { color: currentColor; opacity: 0.5; }
 
-.newsletter-btn {
+.newsletter-submit-btn {
     background: transparent;
     border: none;
     color: var(--bg-accent);
@@ -932,61 +998,57 @@ brand-nameH {
     transition: transform 0.3s ease;
 }
 
-.newsletter-btn:hover { transform: translateX(5px); }
+.newsletter-submit-btn:hover { transform: translateX(5px); }
 
 /* Fila de Enlaces */
-.footer-links-row {
-    display: flex;
-    gap: 80px;
-    margin-bottom: 100px;
-    flex-wrap: wrap;
+.footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 40px;
+    margin-bottom: 80px;
 }
 
-.footer-nav-col { display: flex; flex-direction: column; gap: 15px; }
-.footer-nav-col h4 { color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.5; }
-.footer-nav-col a { color: #ccc; text-decoration: none; font-size: 1rem; transition: all 0.3s ease; font-weight: lighter; }
-.footer-nav-col a:hover { color: var(--bg-accent); transform: translateX(5px); }
+.footer-col-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 25px; opacity: 0.5; }
+.footer-col-links { display: flex; flex-direction: column; gap: 15px; }
+.footer-link-item { color: currentColor; text-decoration: none; font-size: 0.95rem; opacity: 0.8; transition: all 0.3s ease; }
+.footer-link-item:hover { opacity: 1; transform: translateX(5px); }
 
 /* Texto Gigante de Fondo (Impacto Visual) */
 .footer-giant-text {
     position: absolute;
-    bottom: -50px;
+    bottom: -5%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 25vw; /* Gigante y responsivo */
-    font-weight: 200;
-    color: rgba(255, 255, 255, 0.02); /* Muy sutil */
+    font-size: 18vw;
+    font-weight: 900;
+    opacity: 0.02;
     pointer-events: none;
-    z-index: 1;
-    line-height: 0.8;
     white-space: nowrap;
-    filter: blur(10px);
+    z-index: 0;
 }
 
 /* Barra Inferior */
-.footer-bottom-bar {
-    position: relative;
-    z-index: 2;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 30px;
+.footer-bottom-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-top: 40px;
+    border-top: 1px solid currentColor;
+    border-top-color: rgba(128,128,128,0.2);
     font-size: 0.8rem;
-    color: #555;
-    flex-wrap: wrap;
-    gap: 20px;
+    opacity: 0.6;
 }
 
-.footer-legal-links { display: flex; gap: 20px; }
-.footer-legal-links a { color: #555; text-decoration: none; transition: color 0.3s; }
-.footer-legal-links a:hover { color: white; }
+.footer-legal-wrapper { display: flex; gap: 20px; align-items: center; }
+.footer-legal-link { color: currentColor; text-decoration: none; }
+.footer-top-btn { background: none; border: none; color: currentColor; cursor: pointer; margin-left: 20px; font-weight: bold; }
+
 
 /* Ajustes Móviles Footer */
 @media (max-width: 768px) {
-    .footer-top-row { flex-direction: column; gap: 50px; }
-    .footer-links-row { gap: 40px; flex-direction: column; }
+    .footer-top-section { flex-direction: column; gap: 50px; }
+    .footer-links-grid { gap: 40px; flex-direction: column; }
     .newsletter-input-wrapper { width: 100%; }
-    .footer-bottom-bar { flex-direction: column; text-align: center; }
+    .footer-bottom-container { flex-direction: column; text-align: center; gap: 20px; }
     .footer-giant-text { font-size: 35vw; bottom: 20px; }
 }
