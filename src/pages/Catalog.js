@@ -147,6 +147,12 @@ const ProductModal = ({ product, onClose }) => {
                   </div>
                 </div>
 
+                <div className="selection-summary" aria-live="polite">
+                  {(selectedSize || activeColor) && (
+                    <p className="selection-text">Seleccionando: {selectedSize ? `Talla ${selectedSize}` : 'Talla —'}{selectedSize && activeColor ? ' — ' : ' '}{activeColor ? `Color ${activeColor}` : ''}</p>
+                  )}
+                </div>
+
                 <div className="advice-box">
                   <h4 className="modal-label">ACROS STYLIST ADVICE</h4>
                   <p>"{advice}"</p>

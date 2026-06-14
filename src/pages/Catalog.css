@@ -941,3 +941,35 @@
 }
 
 .color-dot[title="OneSize"] { width: 44px; height: 28px; border-radius: 8px; }
+
+/* Size button styles */
+.size-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.size-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 2px solid rgba(128,128,128,0.18);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.size-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(2,6,23,0.06); }
+.size-btn:focus { outline: none; box-shadow: 0 0 0 6px rgba(52,160,182,0.08); }
+.size-btn.active {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.75);
+  transform: scale(1.03);
+}
+
+/* Selection summary text */
+.selection-summary { margin: 0.75rem 0 1.25rem; }
+.selection-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
