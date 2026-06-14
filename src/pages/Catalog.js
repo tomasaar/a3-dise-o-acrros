@@ -197,7 +197,7 @@ const ProductModal = ({ product, onClose }) => {
                 >
                   {isAdded ? '¡AÑADIDO!' : selectedSize ? `AÑADIR AL CARRITO — $${product.price}` : 'SELECCIONA TALLA'}
                 </button>
-                <Link to={`/product/${product.id}`} className="btn-link-detail">Ver ficha completa</Link>
+                <Link to="/cart" className="btn-link-detail">Ir al carrito</Link>
               </div>
           </motion.div>
         </motion.div>

@@ -14,14 +14,49 @@ Documento técnico y memoria para la práctica A3: describe la arquitectura, dec
 - Mejorar la experiencia de carrito y checkout con mensajes claros y animados (confirmación verde-cian).
 - Asegurar accesibilidad mínima (labels, focus, contrastes) y ergonomía móvil.
 
-2. Resumen técnico y stack
+3. Flujo Interactivo y Casuísticas de la Interfaz
+------------------------------------------------
+Para demostrar el comportamiento dinámico del sistema de diseño, se presenta el mapa de navegación e interacción de la aplicación. Este flujo describe de extremo a extremo el ciclo de vida del usuario, analizando tanto las rutas de éxito como la gestión de los estados alternativos.
+
+📸 Imagen Principal del Flujo (Pegar aquí):
+[¡AQUÍ PEGA EL DIAGRAMA DE MIRO/FIGJAM BASADO EN TU NUEVO MERMAID!]
+Rotúla la imagen como: "Figura 2.1: Diagrama de flujo interactivo completo y gestión de estados del sistema ACROS".
+
+2.1 Explicación Detallada del Flujo Paso a Paso
+-----------------------------------------------
+- Punto de Entrada (Home): la aplicación arranca en la raíz `/` y el usuario selecciona el catálogo para `Mens` o `Womens`. Desde el header, el icono de carrito ofrece acceso directo a `/cart` en cualquier momento.
+- Ecosistema de Filtrado (Catálogo → Filtros → Resultados): la pantalla de catálogo mantiene estados locales (`category`, `subcategoryFilter`, `searchTerm`, `maxPrice`, `sizeFilter`) y aplica los filtros en tiempo real dentro de un `useMemo`. El código filtra primero por categoría actual, luego por subcategoría, búsqueda por texto, precio máximo y finalmente talla.
+- Gestión de Selección Obligatoria (Modal de producto → Selección): al abrir el modal de producto, el usuario puede elegir un color y una talla. La regla de negocio implementada exige `talla` como requisito mínimo para habilitar el botón `AÑADIR AL CARRITO`. El color es opcional y no bloquea la acción si la talla ya ha sido seleccionada.
+- Camino Feliz (Color y Talla Seleccionados): cuando `selectedSize` existe, el botón cambia su texto a `AÑADIR AL CARRITO — $XX`, se habilita y ejecuta `addToCart()` para guardar el item en `localStorage`.
+- Estado Límite (Sin Selección de Talla): si no se selecciona talla, el botón permanece en estado deshabilitado y muestra `SELECCIONA TALLA`. Esto evita envíos inválidos y obliga al usuario a corregir la selección antes de avanzar.
+
+2.2 Casuísticas Especiales e Interfaces de Contingencia
+------------------------------------------------------
+- Resultados Vacíos: si la combinación de filtros aplicada no devuelve productos, el grid de catálogo se queda vacío y el usuario puede resetear filtros con el botón `Limpiar` para volver al estado inicial.
+- Carrito Vacío: si el usuario elimina los artículos o aún no ha agregado ninguno, la pantalla de carrito presenta un estado vacío con icono de carrito y texto instruccional. El formulario de pago no se muestra cuando no hay items.
+- Mensajes de Error en Formularios: el checkout muestra validación por campo con borde rojo, mensaje contextual y foco directo en el primer campo inválido. Esto habilita una corrección accesible y reduce la ambigüedad frente al típico mensaje genérico.
+
+2.3 Gestión del Carrito y Persistencia
+--------------------------------------
+- Al añadir un producto, `addToCart()` lee el carrito desde `localStorage`, busca entradas existentes con el mismo `id` y `size`, e incrementa `qty` si ya existe, o añade una nueva línea si no.
+- El carrito persiste en `localStorage` con la clave `acros_cart` y se sincroniza al recargar la página.
+
+2.4 Checkout y Validación de Errores
+------------------------------------
+- El checkout utiliza `useState` para manejar el formulario con `name`, `email` y `address`.
+- La validación comprueba que los tres campos no estén vacíos. Si falta alguno, se muestra el mensaje `Rellena los campos obligatorios.` y la compra no continúa.
+- Con datos válidos, se vacía el carrito (`clearCart()`), se actualiza el estado local y se muestra la pantalla de confirmación con texto de éxito.
+
+3. Resumen técnico y stack
 -------------------------
-- Framework: React (v18+), SPA con `react-router-dom` v6.
-- Estado local y persistencia: `useState` para estado UI; `localStorage` para persistencia del carrito (`src/utils/cart.js`).
-- Estilos: CSS modular por página (ficheros bajo `src/pages/*.css` y `src/components/*.css`).
-- Animaciones: `framer-motion` para transiciones de páginas y modales.
-- Iconografía: `lucide-react` para iconos vectoriales ligeros.
-- Build / Tooling: Create React App (estructura estándar), `npm` para paquetes.
+- Framework: React (v18+) en una SPA gestionada con `react-router-dom` v6.
+- Rutas principales: `/` (Home), `/catalog` (catálogo con filtros), `/product/:id` (ficha de producto), `/cart` (carrito) y `/checkout`.
+- Estado y persistencia: `useState` en componentes de páginas para UI y selección; `localStorage` para persistir el carrito bajo la clave `acros_cart` con helpers en `src/utils/cart.js`.
+- Lógica de producto: el catálogo usa `PRODUCTS` de `src/components/constants.js`; el modal del catálogo tiene selección de talla obligatoria, selección de color opcional y botón `AÑADIR AL CARRITO` deshabilitado hasta elegir talla.
+- Estilos: CSS por página y componente (`src/pages/*.css`, `src/components/*.css`), con diseño responsive y adaptaciones móviles.
+- Animaciones: `framer-motion` en transiciones de modal y animaciones de tarjeta de producto.
+- Iconos: `lucide-react` para el carrito, menú y botones de interacción.
+- Build / Tooling: Create React App / `npm`; scripts básicos `npm install`, `npm start`, `npm run build`.
 
 3. Arquitectura y organización del código
 ---------------------------------------

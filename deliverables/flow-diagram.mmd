@@ -1,36 +1,51 @@
 flowchart TD
-    Home[Home]
-    Catalog[Catálogo]
-    Filter[Filtros: categoría / precio / talla / modelo]
-    Results[Resultados filtrados]
-    Product[Detalle de producto]
-    Size[Seleccionar talla y color]
-    ColorOK[Color y talla seleccionados]
-    NoSelect[Sin selección]
-    Cart[Carrito]
-    Adjust[Ajustar cantidad]
-    Checkout[Checkout]
-    Validation[Validación de formulario / Errores]
-    Success[Pedido confirmado]
-    Empty[Carrito vacío]
+    subgraph UI["Cliente (UI)"]
+      Home["Home"]
+      Catalog["Catálogo\n(Mens / Womens)"]
+      Filter["Filtros\nsubcategoría / búsqueda / precio / talla"]
+      Results["Resultados filtrados"]
+      NoResults["Resultados vacíos"]
+      Product["Detalle de producto"]
+      Select["Selección de producto\ntalla obligatoria, color opcional"]
+      Disabled["Botón bloqueado\nsin talla"]
+      AddCart["Botón habilitado\nAÑADIR AL CARRITO"]
+      Cart["Carrito"]
+      Adjust["Ajustar qty / vaciar"]
+      EmptyCart["Carrito vacío"]
+      Checkout["Checkout"]
+      Validate["Validación de formulario"]
+      Error["Error de validación"]
+      Success["Pedido confirmado"]
+    end
+
+    subgraph Persistence["Persistencia (localStorage/API)"]
+      LocalCart[("LocalStorage\nacros_cart")]
+    end
 
     Home --> Catalog
+    Home --> |Icono carrito| Cart
     Catalog --> Filter
     Filter --> Results
-    Results --> Product
-    Product --> Size
-    Size --> |Validado| ColorOK
-    Size --> |Falta selección| NoSelect
-    NoSelect --> |Botón deshabilitado| Product
-    ColorOK --> Cart
+    Results --> |abrir producto| Product
+    Results --> |sin resultados| NoResults
+    Product --> Select
+    Select --> |talla seleccionada| AddCart
+    Select --> |sin talla| Disabled
+    Disabled --> |mantiene bloqueado| Product
+    AddCart --> Cart
+    AddCart --> |guardar item| LocalCart
     Cart --> Adjust
+    Cart --> |vaciar / todos borrados| EmptyCart
     Cart --> Checkout
-    Checkout --> Validation
-    Validation --> |Error| Validation
-    Validation --> |OK| Success
-    Cart --> Empty
-    Home --> |Icono carrito| Cart
-    Results --> |Sin resultados| Empty
-    Product --> |Añadir| Cart
-    Checkout --> |Campos incompletos| Validation
-    Checkout --> |Completo| Success
+    Cart --> LocalCart
+    Checkout --> Validate
+    Validate --> |error| Error
+    Error --> |volver a corregir| Checkout
+    Validate --> |OK| Success
+    Success --> |vacía carrito| LocalCart
+    Success --> Cart
+
+    classDef ui fill:#d9f7ff,stroke:#0b69a3,stroke-width:1px;
+    classDef persistence fill:#f0f7ff,stroke:#1a8cff,stroke-width:1px;
+    class Home,Catalog,Filter,Results,NoResults,Product,Select,Disabled,AddCart,Cart,Adjust,EmptyCart,Checkout,Validate,Error,Success ui;
+    class LocalCart persistence;
