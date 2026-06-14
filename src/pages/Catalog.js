@@ -39,6 +39,32 @@ const ProductModal = ({ product, onClose }) => {
     }
   }, [product]);
 
+  // Map color hex codes to friendly names
+  const colorNameMap = {
+    '#1a1a1a': 'Negro',
+    '#000000': 'Negro',
+    '#ffffff': 'Blanco',
+    '#001f3f': 'Azul marino',
+    '#ffb7b2': 'Rosa claro',
+    '#555555': 'Gris medio',
+    '#333333': 'Gris oscuro',
+    '#0b3d4a': 'Verde azulado',
+    '#94f3e4': 'Cian claro',
+    '#ff6b6b': 'Rojo salmón',
+    '#ffd6a5': 'Melocotón',
+    '#111827': 'Antracita',
+    '#34a0b6': 'Turquesa',
+    '#f8f9fa': 'Blanco hueso',
+    '#f0a6c4': 'Rosa',
+    '#0f1720': 'Negro azulado'
+  };
+
+  const getColorLabel = (c) => {
+    if (!c) return '';
+    const key = typeof c === 'string' ? c.toLowerCase() : c;
+    return colorNameMap[key] || c;
+  };
+
   useEffect(() => {
     if (!activeColor || !product || !canvasRef.current || !imageRef.current) return;
     const canvas = canvasRef.current;
@@ -120,14 +146,14 @@ const ProductModal = ({ product, onClose }) => {
                   <div className="color-grid">
                     {product.colors.map((c, i) => (
                       <button
-                        key={i}
-                        type="button"
-                        aria-label={`Seleccionar color ${c}`}
-                        title={c}
-                        onClick={() => setActiveColor(c)}
-                        className={`color-dot ${activeColor === c ? 'active' : ''}`}
-                        style={{ backgroundColor: c }}
-                      />
+                          key={i}
+                          type="button"
+                          aria-label={`Seleccionar color ${getColorLabel(c)}`}
+                          title={getColorLabel(c)}
+                          onClick={() => setActiveColor(c)}
+                          className={`color-dot ${activeColor === c ? 'active' : ''}`}
+                          style={{ backgroundColor: c }}
+                        />
                     ))}
                   </div>
                 </div>
@@ -149,7 +175,7 @@ const ProductModal = ({ product, onClose }) => {
 
                 <div className="selection-summary" aria-live="polite">
                   {(selectedSize || activeColor) && (
-                    <p className="selection-text">Seleccionando: {selectedSize ? `Talla ${selectedSize}` : 'Talla —'}{selectedSize && activeColor ? ' — ' : ' '}{activeColor ? `Color ${activeColor}` : ''}</p>
+                    <p className="selection-text">Seleccionando: {selectedSize ? `Talla ${selectedSize}` : 'Talla —'}{selectedSize && activeColor ? ' — ' : ' '}{activeColor ? `Color ${getColorLabel(activeColor)}` : ''}</p>
                   )}
                 </div>
 
