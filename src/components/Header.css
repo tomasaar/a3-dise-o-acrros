@@ -333,11 +333,21 @@ button:focus, button:active {
 }
 
 .sidebar-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: var(--bg-accent);
+  background: #000; /* Contraste fuerte para la X */
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.sidebar-close-btn:hover,
+.sidebar-close-btn:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.55);
+  outline: none;
 }
 
 /* Navegación */
