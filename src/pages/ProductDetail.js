@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { PRODUCTS } from '../components/constants';
 import { addToCart } from '../utils/cart';
 
 function ProductDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const product = PRODUCTS.find(p => String(p.id) === String(id));
   const [size, setSize] = useState(null);
   const [msg, setMsg] = useState(null);
@@ -21,7 +20,6 @@ function ProductDetail() {
     if (!size) { setMsg({ type: 'error', text: 'Selecciona una talla.' }); return; }
     addToCart({ id: product.id, name: product.name, price: product.price, size, image: product.image, qty: 1 });
     setMsg({ type: 'success', text: 'Producto añadido al carrito.' });
-    setTimeout(() => navigate('/cart'), 800);
   }
 
   return (
@@ -42,7 +40,7 @@ function ProductDetail() {
           </div>
         </div>
 
-        <button onClick={handleAdd} style={{ marginTop: 12, padding: '12px 16px' }}>Añadir al carrito</button>
+        <button className="btn-buy" onClick={handleAdd}>Añadir al carrito</button>
         {msg && <div role="status" style={{ marginTop: 8, color: msg.type==='error' ? 'crimson' : 'green' }}>{msg.text}</div>}
       </div>
     </main>

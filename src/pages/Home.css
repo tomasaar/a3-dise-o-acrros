@@ -434,7 +434,7 @@ brand-nameH {
 
         .scroll-indicator {
             position: absolute;
-            bottom: 3%;
+            bottom: 2%;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
@@ -443,12 +443,14 @@ brand-nameH {
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            opacity: 0.95;
-            transition: all 0.25s ease;
-            padding: 8px 12px;
-            background: linear-gradient(90deg, rgba(20,184,166,0.10), rgba(37,99,235,0.10));
+            opacity: 0.98;
+            transition: all 0.22s cubic-bezier(.2,.9,.2,1);
+            padding: 10px 14px;
+            background: linear-gradient(90deg, rgba(20,184,166,0.18), rgba(37,99,235,0.18));
             border-radius: 999px;
-            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 18px 42px rgba(37,99,235,0.22), 0 6px 20px rgba(0,0,0,0.45);
+            backdrop-filter: blur(6px);
         }
 
         .scroll-indicator:hover {
@@ -458,26 +460,23 @@ brand-nameH {
 
         .scroll-indicator-text {
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.75em;
+            font-size: 0.85em;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.85);
-            font-weight: 600;
-            margin-top: 4px;
-            opacity: 0.9;
+            color: #ffffff;
+            font-weight: 700;
+            margin-top: 6px;
+            opacity: 1;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.45);
         }
 
         .scroll-indicator svg {
-            width: 64px;
-            height: 64px;
-            display: block;
-            padding: 10px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #14b8a6 0%, #2563eb 100%);
-            box-shadow: 0 18px 40px rgba(37,99,235,0.28), 0 6px 18px rgba(0,0,0,0.45);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
-            animation: bounce 2s infinite;
+            width: 36px;
+            height: 36px;
+            fill: #ffffff;
+            stroke: rgba(255,255,255,0.98);
+            animation: bounce 2s infinite, pulseGlow 4s infinite;
+            will-change: transform, box-shadow;
         }
 
         .scroll-indicator svg path {
@@ -493,9 +492,9 @@ brand-nameH {
         }
 
         @media (max-width: 768px) {
-            .scroll-indicator { bottom: 4%; padding: 6px 10px; }
-            .scroll-indicator-text { font-size: 0.9em; }
-            .scroll-indicator svg { width: 24px; height: 24px; }
+            .scroll-indicator { bottom: 2.5%; padding: 8px 12px; }
+            .scroll-indicator-text { font-size: 0.95em; }
+            .scroll-indicator svg { width: 30px; height: 30px; }
         }
     
     @keyframes bounce {
@@ -509,6 +508,29 @@ brand-nameH {
         transform: translateY(-5px);
       }
     }
+
+        @keyframes pulseGlow {
+            0% {
+                transform: translateY(0) scale(1);
+                box-shadow: 0 18px 40px rgba(37,99,235,0.28), 0 6px 18px rgba(0,0,0,0.45);
+            }
+            50% {
+                transform: translateY(-4px) scale(1.07);
+                box-shadow: 0 28px 60px rgba(37,99,235,0.38), 0 12px 28px rgba(0,0,0,0.55);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                box-shadow: 0 18px 40px rgba(37,99,235,0.28), 0 6px 18px rgba(0,0,0,0.45);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-indicator svg {
+                animation: none !important;
+                transform: translateY(0) scale(1) !important;
+                box-shadow: none !important;
+            }
+        }
 
       /* Imagen fija que aparece después del carrusel */
 .fixed-parallax-bg {
