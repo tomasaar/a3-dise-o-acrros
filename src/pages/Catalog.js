@@ -1,231 +1,414 @@
-/* import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import ThreeClothViewer from '../components/ThreeClothViewer';
+import React, { useState, useMemo, useRef, useEffect, memo } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
+import { PRODUCTS } from '../components/constants';
+import { addToCart } from '../utils/cart';
 import './Catalog.css';
 
-// ... (Importaciones GLB y de assets) ...
-import { Model as ModeloBase } from '../components/models/ModeloBase';
-import { Model as Racerback } from '../components/models/Racerback';
-import { Model as Stringer } from '../components/models/Stringer';
-import { Model as Compression } from '../components/models/Compression';
-import patron1 from '../assets/patron1.png';
-import logo from '../assets/logoB.png';
-import * as THREE from 'three';
+// Assets locales
+import hombreImg from '../assets/catalogo-hombre1.png';
+import mujerImg from '../assets/catalogo-women.png';
 
-const availableClothing = [
-  { 
-    name: 'RunnerBack', 
-    component: Racerback, 
-    price: '$89', 
-    description: 'Diseñada para atletas de élite...',
-    features: ['HIDROFÓBICO', 'TERMORREGULACIÓN', 'COSTURAS SÓNICAS'],
-    decalScale: new THREE.Vector3(0.12, 0.12, 0.5),
-    decalPosition: new THREE.Vector3(0.15, 2, 0),
-    decalRotation: new THREE.Euler(0, 0, 0),
-    decalName: 'runnerback_decal',
-  },
-  { 
-    name: 'Stringer', 
-    component: Stringer, 
-    price: '$79', 
-    description: 'Ligereza extrema...',
-    features: ['ALTO RENDIMIENTO', 'VENTILACIÓN LÁSER', 'ULTRA LIGERO'],
-    decalScale: new THREE.Vector3(0.12, 0.12, 1),
-    decalPosition: new THREE.Vector3(0.1, 2.0, 0.1),
-    decalRotation: new THREE.Euler(0, 0, 0),
-    decalName: 'stringer_decal',
-  },
-  { 
-    name: 'Compression', 
-    component: Compression, 
-    price: '$129', 
-    description: 'Compresión inteligente...',
-    features: ['COMPRESIÓN', 'SECADO RÁPIDO', 'ANTI-OLOR'],
-    decalScale: new THREE.Vector3(0.15, 0.15, 0.05),
-    decalPosition: new THREE.Vector3(0, 1.85, 0.02),
-    decalRotation: new THREE.Euler(0, 0, 0),
-    decalName: 'compression_decal',
-  },
+// --- CONFIGURACIÓN DE IMÁGENES (SLIDER) ---
+const IMG_OPTS = 'auto=format,webp&q=60&w=800&fit=crop';
+const COLLECTIONS = [
+  { id: 1, title: 'NEON PEAK', label: 'INVIERNO 2025', img: `https://images.unsplash.com/photo-1518310383802-640c2de311b2?${IMG_OPTS}` },
+  { id: 2, title: 'ZENITH FLOW', label: 'SERIE YOGA', img: `https://images.unsplash.com/photo-1506629082955-511b1aa562c8?${IMG_OPTS}` },
+  { id: 3, title: 'STEALTH LAB', label: 'URBANO', img: `https://images.unsplash.com/photo-1591047139829-d91aecb6caea?${IMG_OPTS}` },
+  { id: 4, title: 'SOLAR CORE', label: 'RENDIMIENTO', img: `https://images.unsplash.com/photo-1517836357463-d25dfeac3438?${IMG_OPTS}` },
 ];
 
-const availablePatterns = [
-  { name: 'Blanco', value: '#ffffff', type: 'color' },
-  { name: 'Vinotinto', value: '#4b1717ff', type: 'color' },
-  { name: 'Negro', value: '#272727ff', type: 'color' },
-  { name: 'Azul Oscuro', value: '#22314A', type: 'color' },
-  { name: 'Verde Neón', value: '#4DD598', type: 'color' },
-  { name: 'Verde Militar', value: '#142200ff', type: 'color' },
-  { name: 'Patrón 1', value: patron1, type: 'image' },
-];
+// --- MODAL SIMPLIFICADO ---
+const ProductModal = ({ product, onClose }) => {
+  const [activeColor, setActiveColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [isAdded, setIsAdded] = useState(false);
+  const [advice, setAdvice] = useState('');
+  const canvasRef = useRef(null);
+  const imageRef = useRef(null);
 
-const CatalogOriginal = () => {
-    const [baseReady, setBaseReady] = useState(false);
-    const [clothingReady, setClothingReady] = useState(false);
-    const pageFullyReady = baseReady && clothingReady;
+  // Mock de consejo de estilo (ya que eliminamos el servicio)
+  useEffect(() => { setAdvice("Combina este tono con accesorios minimalistas para resaltar la textura."); }, [product]);
 
-    useEffect(() => {
-        function onBase() { setBaseReady(true); }
-        function onCloth() { setClothingReady(true); }
-        window.addEventListener('base-model-loaded', onBase);
-        window.addEventListener('clothing-loaded', onCloth);
-        const to = setTimeout(() => { setBaseReady(true); setClothingReady(true); }, 8000);
-        return () => { window.removeEventListener('base-model-loaded', onBase); window.removeEventListener('clothing-loaded', onCloth); clearTimeout(to); };
-    }, []);
-
-    const [selectedPattern, setSelectedPattern] = useState(null);
-    const [baseColor, setBaseColor] = useState('#ffffff');
-    const [logoColor, setLogoColor] = useState('#000000');
-    const [selectedClothing, setSelectedClothing] = useState(availableClothing[0]);
-
-    const handleClothingSelect = useCallback((clothing) => {
-        if (clothing.name === selectedClothing.name) return;
-        const titleEl = document.querySelector('.selected-name');
-        titleEl?.classList?.add('anim-exit');
-        const selectorEl = document.querySelector('.model-selector-container');
-        selectorEl?.classList?.add('model-change-anim');
-
-        setTimeout(() => {
-            setSelectedClothing(clothing);
-            titleEl?.classList?.remove('anim-exit');
-            titleEl?.classList?.add('anim-enter');
-            selectorEl?.classList?.remove('model-change-anim');
-            setTimeout(() => { titleEl?.classList?.remove('anim-enter'); }, 380);
-        }, 220);
-    }, [selectedClothing]);
-
-    const handlePatternSelect = useCallback((pattern) => {
-        if (pattern.type === 'color') {
-            setBaseColor(pattern.value);
-            setSelectedPattern(null);
-        } else if (pattern.type === 'image') {
-            setSelectedPattern(pattern.value);
-            setBaseColor('#ffffff');
-        }
-        const darkColors = ['#22314A', '#4b1717ff', '#142200ff'];
-        if (darkColors.includes(pattern.value)) {
-            setLogoColor('#ffffff');
-        } else {
-            setLogoColor('#000000');
-        }
-    }, []);
-
-    useEffect(() => {
-        const texLoader = new THREE.TextureLoader();
-        const pending = [];
-        availablePatterns.forEach(p => {
-            if (p.type === 'image') {
-                pending.push(new Promise(resolve => {
-                    texLoader.load(p.value, (tex) => { resolve(); }, undefined, () => resolve());
-                }));
-            }
-        });
-        pending.push(new Promise(resolve => {
-            texLoader.load(logo, (tex) => { resolve(); }, undefined, () => resolve());
-        }));
-        Promise.all(pending).then(() => {});
-    }, []);
-
-  const getActivePattern = useCallback(() => {
-    if (selectedPattern) {
-        return availablePatterns.find(p => p.value === selectedPattern)?.name || '';
+  useEffect(() => {
+    if (product) {
+      setActiveColor(null);
+      setSelectedSize(null);
+      setIsAdded(false);
     }
-    return availablePatterns.find(p => p.value === baseColor)?.name || '';
-  }, [selectedPattern, baseColor]);
+  }, [product]);
 
-  const activePatternName = getActivePattern();
-
-    useEffect(() => {
-        const el = document.querySelector('.canvas-wrap');
-        const t = setTimeout(() => el?.classList?.add('loaded'), 120);
-        return () => { clearTimeout(t); el?.classList?.remove('loaded'); };
-    }, []);
-
-  const clothingButtons = useMemo(() => 
-    availableClothing.map(item => (
-      <button 
-        key={item.name} 
-        className={`model-button ${selectedClothing.name === item.name ? 'active' : ''}`}
-        onClick={() => handleClothingSelect(item)}
-      >
-        {item.name}
-      </button>
-    )), [selectedClothing, handleClothingSelect]);
-
-  const patternButtons = useMemo(() => 
-    availablePatterns.map(p => {
-      const isActive = (p.type === 'color' && baseColor === p.value && selectedPattern === null) ||
-                       (p.type === 'image' && selectedPattern === p.value);
-      return (
-          <div key={p.name} className={`swatch-container ${isActive ? 'active' : ''}`} onClick={() => handlePatternSelect(p)}>
-            {p.type === 'color' ? (
-                <div className="color-swatch" style={{ backgroundColor: p.value }}><span></span></div>
-            ) : (
-                <img src={p.value} alt={p.name} className="pattern-image" />
-            )}
-        </div>
-      );
-    }), [selectedPattern, baseColor, handlePatternSelect]);
+  useEffect(() => {
+    if (!activeColor || !product || !canvasRef.current || !imageRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     
-  const featureChips = useMemo(() => 
-      selectedClothing?.features.map(feature => (
-          <div key={feature} className="feature-chip">{feature}</div>
-      )), [selectedClothing]
-  );
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
+    };
 
-  return (
-        <div className="catalog-layout">
-            {!pageFullyReady && (
-                <div className="catalog-loader" style={{position:'fixed',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'#0f1315',zIndex:2,color:'#fff'}}>
-                   Cargando...
+    const targetRgb = hexToRgb(activeColor);
+    const baseRgb = hexToRgb(product.garmentColor);
+
+    const process = () => {
+      canvas.width = imageRef.current.naturalWidth;
+      canvas.height = imageRef.current.naturalHeight;
+      ctx.drawImage(imageRef.current, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const d = Math.sqrt(Math.pow(data[i]-baseRgb.r,2)+Math.pow(data[i+1]-baseRgb.g,2)+Math.pow(data[i+2]-baseRgb.b,2));
+        if (d < 75) {
+          const brightness = (data[i] + data[i+1] + data[i+2]) / 3 / 128;
+          data[i] = targetRgb.r * brightness;
+          data[i+1] = targetRgb.g * brightness;
+          data[i+2] = targetRgb.b * brightness;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+    };
+    if (imageRef.current.complete) process(); else imageRef.current.onload = process;
+  }, [activeColor, product]);
+
+  return createPortal(
+    <AnimatePresence>
+      {product && (
+        <motion.div
+          className="modal-overlay-sidebar"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          onClick={onClose} // Cierra el modal al hacer clic en el fondo
+        >
+          <motion.div
+            className="modal-content-sidebar"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", stiffness: 350, damping: 40 }}
+            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro del modal lo cierre
+          >
+              <button onClick={onClose} className="modal-close-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+              </button>
+
+              <div className="modal-viewer">
+                <img ref={imageRef} src={product.image} crossOrigin="anonymous" className="hidden" alt="" />
+                {!activeColor ? <img src={product.image} className="full-img" alt="" /> : <canvas ref={canvasRef} className="full-img" />}
+                
+                <div className="modal-badge">
+                  <span>RENDERING ENGINE V2.0</span>
+                  <div className="badge-status">
+                     <div className="status-dot"></div>
+                     <span>PROCESAMIENTO LOCAL</span>
+                  </div>
                 </div>
-            )}
-            <div className="controls-section">
-                <div className="control-group model-header">
-                    <h2 className="selected-name">{selectedClothing.name}</h2>
-                    <span className="product-price">{selectedClothing.price}</span>
-                    <p className="product-description">{selectedClothing.description}</p>
-                    <div className="feature-chips-container">{featureChips}</div>
+              </div>
+
+              <div className="modal-details">
+                <span className="modal-category-tag">{product.category}</span>
+                <h2 className="modal-title">{product.name}</h2>
+                <p className="modal-product-desc">{product.description}</p>
+                
+                <div className="color-section">
+                  <h4 className="modal-label">COLOR DE PRENDA</h4>
+                  <div className="color-grid">
+                    {product.colors.map((c, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`Seleccionar color ${c}`}
+                        title={c}
+                        onClick={() => setActiveColor(c)}
+                        className={`color-dot ${activeColor === c ? 'active' : ''}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="control-group">
-                    <div className="model-buttons-wrapper">{clothingButtons}</div>
+
+                <div className="size-section">
+                  <h4 className="modal-label">SELECCIONAR TALLA</h4>
+                  <div className="size-grid">
+                    {['XS', 'S', 'M', 'L', 'XL'].map(size => (
+                      <button 
+                        key={size} 
+                        onClick={() => setSelectedSize(size)}
+                        className={`size-btn ${selectedSize === size ? 'active' : ''}`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="control-group color-selector">
-                    <div className="patterns-container-row">{patternButtons}</div>
+
+                <div className="advice-box">
+                  <h4 className="modal-label">ACROS STYLIST ADVICE</h4>
+                  <p>"{advice}"</p>
                 </div>
-            </div>
-            <div className="viewer-section">
-                <ThreeClothViewer
-                  BaseModel={ModeloBase}
-                  selectedPattern={selectedPattern}
-                  logoUrl={logo}
-                  baseColor={baseColor}
-                  logoColor={logoColor}
-                  ClothingComponent={selectedClothing?.component || null}
-                />
-            </div>
-        </div>
+
+                <button 
+                  className={`btn-buy ${isAdded ? 'success' : ''}`} 
+                  disabled={!selectedSize}
+                  onClick={() => {
+                    if (!selectedSize) return;
+                    // Añadir al carrito persistente
+                    addToCart({ id: product.id, name: product.name, price: product.price, size: selectedSize, color: activeColor, image: product.image, qty: 1 });
+                    setIsAdded(true);
+                    setTimeout(() => setIsAdded(false), 2000);
+                  }}
+                >
+                  {isAdded ? '¡AÑADIDO!' : selectedSize ? `AÑADIR AL CARRITO — $${product.price}` : 'SELECCIONA TALLA'}
+                </button>
+                <Link to={`/product/${product.id}`} className="btn-link-detail">Ver ficha completa</Link>
+              </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 };
-*/
 
-// --- COMPONENTE TEMPORAL ACTIVO ---
-// Esto permite que el resto de la aplicación funcione sin errores de importación.
-
-import React from 'react';
-
-const Catalog = () => {
+// --- COMPONENTE: 3D SLIDER ---
+const SimpleCollectionSlider = memo(({ featuredCollection, onPrev, onNext }) => {
   return (
-    <div style={{ 
-      height: '80vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      color: '#ffffff',
-      background: '#0f1315',
-      fontFamily: 'sans-serif'
-    }}>
-      <h2 style={{ marginBottom: '10px' }}>Catálogo Temporalmente Desactivado</h2>
-      <p style={{ opacity: 0.6 }}>El código 3D ha sido comentado para mantenimiento.</p>
+    <section className="collection-banner elegant-slider">
+      <img src={featuredCollection.img} alt={featuredCollection.title} className="collection-banner-img" />
+      <div className="collection-banner-overlay" />
+      <div className="collection-banner-copy elegant-copy">
+        <span>{featuredCollection.label}</span>
+        <h3>{featuredCollection.title}</h3>
+        <p>Descubre la colección más reciente con cortes sencillos y materiales pensados para la ciudad.</p>
+        <div className="collection-banner-controls">
+          <button className="slider-control" onClick={onPrev} aria-label="Colección anterior">←</button>
+          <button className="slider-control" onClick={onNext} aria-label="Siguiente colección">→</button>
+        </div>
+      </div>
+    </section>
+  );
+});
+
+// --- COMPONENTE: PRODUCT CARD (Con efecto Tilt 3D) ---
+const ProductCard = memo(({ product, onClick }) => {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const mouseXSpring = useSpring(x, { damping: 25, stiffness: 200 });
+  const mouseYSpring = useSpring(y, { damping: 25, stiffness: 200 });
+  
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["5deg", "-5deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-5deg", "5deg"]);
+
+  const handleMouseMove = (e) => { 
+      if (!ref.current) return; 
+      const r = ref.current.getBoundingClientRect(); 
+      x.set((e.clientX - r.left) / r.width - 0.5); 
+      y.set((e.clientY - r.top) / r.height - 0.5); 
+  };
+
+  return (
+    <motion.div 
+        ref={ref} 
+        onMouseMove={handleMouseMove} 
+        onMouseLeave={() => { x.set(0); y.set(0); }} 
+        onClick={() => onClick(product)} 
+        className="product-card-3d" 
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+    >
+      <motion.div className="card-image-wrapper">
+        <img src={product.image} alt={product.name} className="card-img" />
+        <span className="card-new-badge">NEW</span>
+      </motion.div>
+      <div className="card-details">
+        <div className="card-meta">
+            <span className="card-category">{product.category}</span>
+            <span className="card-price">${product.price}</span>
+        </div>
+        <h3 className="card-name">{product.name}</h3>
+      </div>
+    </motion.div>
+  );
+});
+
+// --- COMPONENTE PRINCIPAL ---
+const Catalog = () => {
+  const [view, setView] = useState('entry');
+  const [category, setCategory] = useState('Mens');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [sliderIndex, setSliderIndex] = useState(0);
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sizeFilter, setSizeFilter] = useState('');
+  const [subcategoryFilter, setSubcategoryFilter] = useState('');
+
+  const products = useMemo(() => {
+    return PRODUCTS
+      .filter(p => {
+        // Siempre respetar la categoría del catálogo (p. ej. Mens/Womens)
+        if (category) {
+          if (p.category !== category) return false;
+        }
+        // Si hay filtro por subcategoría aplicado, respetarlo (dentro de la categoría)
+        if (subcategoryFilter && subcategoryFilter !== 'All') {
+          return p.subcategory === subcategoryFilter;
+        }
+        return true;
+      })
+      .filter(p => {
+        if (searchTerm.trim()) {
+          return p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        return true;
+      })
+      .filter(p => {
+        if (!maxPrice) return true;
+        const mp = Number(maxPrice);
+        if (Number.isNaN(mp)) return true;
+        return p.price <= mp;
+      })
+      .filter(p => {
+        if (!sizeFilter) return true;
+        // Si el producto tiene disponibilidad por talla, respetarla; si no, no filtrar
+        return !p.sizes || p.sizes.includes(sizeFilter);
+      });
+  }, [category, subcategoryFilter, searchTerm, maxPrice, sizeFilter]);
+
+  const featuredCollection = COLLECTIONS[sliderIndex];
+
+  const handleSlide = (direction) => {
+    setSliderIndex(prev => (prev + direction + COLLECTIONS.length) % COLLECTIONS.length);
+  };
+
+  return (
+    <div className="app-container">
+      <AnimatePresence mode="wait">
+        {view === 'entry' ? (
+          <motion.div key="entry" exit={{ opacity: 0 }} className="aura-container">
+            <div className="aura-overlay">
+              <h1 className="aura-main-title">ACROS</h1>
+              <p className="aura-subtitle">BIENVENIDO AL CATÁLOGO</p>
+            </div>
+            <div className="aura-split-screen">
+              <button onClick={() => { setCategory('Mens'); setView('shop'); }} className="aura-section">
+                <div className="aura-image-wrapper">
+                  <img src={hombreImg} className="aura-bg-image" alt="Mens" />
+                  <div className="aura-dark-filter" />
+                </div>
+                <div className="aura-content left">
+                  <h2 className="aura-category-name">HOMBRE</h2>
+                  <div className="aura-underline" />
+                </div>
+              </button>
+              <button onClick={() => { setCategory('Womens'); setView('shop'); }} className="aura-section">
+                <div className="aura-image-wrapper">
+                  <img src={mujerImg} className="aura-bg-image" alt="Womens" />
+                  <div className="aura-dark-filter" />
+                </div>
+                <div className="aura-content right">
+                  <h2 className="aura-category-name">MUJER</h2>
+                  <div className="aura-underline right-align" />
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div key="shop" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="catalog-section-wrapper">
+            
+            <section className="w-full">
+                <SimpleCollectionSlider
+                  featuredCollection={featuredCollection}
+                  onPrev={() => handleSlide(-1)}
+                  onNext={() => handleSlide(1)}
+                />
+            </section>
+
+            <div className="catalog-container">
+              <nav className="catalog-nav">
+                <button onClick={() => setView('entry')} className="btn-back-catalog">
+                  <span>←</span> VOLVER
+                </button>
+                <div className="category-tabs-folder">
+                  <div className="category-tabs-line" />
+                  {['Mens', 'Womens'].map((cat) => {
+                    const isActive = category === cat;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setCategory(cat)}
+                        className={`category-tab-button ${isActive ? 'active' : ''}`}
+                      >
+                        {cat === 'Mens' ? 'HOMBRE' : 'MUJER'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </nav>
+
+              <header className="catalog-header">
+                <h2 className="catalog-title-large">
+                  {category === 'Mens' ? 'CATÁLOGO HOMBRE' : 'CATÁLOGO MUJER'}
+                </h2>
+                <div className="catalog-desc-row">
+                   <p className="catalog-desc">COLECCIÓN DE ALTO RENDIMIENTO DISEÑADA PARA LA ÉLITE. MATERIALES TÉCNICOS Y ESTÉTICA MINIMALISTA.</p>
+                   <span className="catalog-tag">Since 2025</span>
+                </div>
+              </header>
+
+              {/* Barra de filtros */}
+              <div className="filter-bar">
+                <div className="filter-control">
+                  <label className="filter-label">Buscar</label>
+                  <input className="filter-input" placeholder="Buscar por modelo o palabra clave" value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} />
+                </div>
+
+                  <div className="filter-control">
+                    <label className="filter-label">Categoría</label>
+                    <select className="filter-select" value={subcategoryFilter} onChange={(e)=>setSubcategoryFilter(e.target.value)}>
+                      <option value="">Por defecto</option>
+                      <option value="All">Todas</option>
+                      {['Shorts','Frannelillas','Franelas','Accesorios','Leggings'].map(sc => (
+                        <option key={sc} value={sc}>{sc}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="filter-control">
+                    <label className="filter-label">Precio (máx.)</label>
+                    <input className="filter-input" type="number" min="0" placeholder="80" value={maxPrice} onChange={(e)=>setMaxPrice(e.target.value)} />
+                  </div>
+
+                <div className="filter-control">
+                  <label className="filter-label">Talla</label>
+                  <select className="filter-select" value={sizeFilter} onChange={(e)=>setSizeFilter(e.target.value)}>
+                    <option value="">Todas</option>
+                    {['XS','S','M','L','XL'].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+
+                <div className="filter-actions">
+                  <button className="btn btn-secondary" onClick={() => { setSearchTerm(''); setMaxPrice(''); setSizeFilter(''); setSubcategoryFilter(''); }}>Limpiar</button>
+                </div>
+              </div>
+
+              <div className="product-grid-3d">
+                {products.map(p => (
+                    <ProductCard key={p.id} product={p} onClick={setSelectedProduct} />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   );
 };

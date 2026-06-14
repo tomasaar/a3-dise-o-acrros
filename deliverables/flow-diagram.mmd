@@ -1,0 +1,31 @@
+flowchart TD
+    Home[Home]
+    Catalog[Catálogo]
+    Filter[Filtros: categoría / precio / talla / modelo]
+    Results[Resultados filtrados]
+    Product[Detalle de producto]
+    Size[Seleccionar talla]
+    Cart[Carrito]
+    Adjust[Ajustar cantidad]
+    Checkout[Checkout]
+    Validation[Validación de formulario / Errores]
+    Success[Pedido confirmado]
+    Empty[Carrito vacío]
+
+    Home --> Catalog
+    Catalog --> Filter
+    Filter --> Results
+    Results --> Product
+    Product --> Size
+    Size --> Cart
+    Cart --> Adjust
+    Cart --> Checkout
+    Checkout --> Validation
+    Validation --> |Error| Validation
+    Validation --> |OK| Success
+    Cart --> Empty
+    Home --> |Icono carrito| Cart
+    Results --> |Sin resultados| Empty
+    Product --> |Añadir| Cart
+    Checkout --> |Campos incompletos| Validation
+    Checkout --> |Completo| Success

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingCart } from 'lucide-react';
 import './Header.css';
 import logoIcon from '../assets/logo.png'; 
 import logoDark from '../assets/logo2.png';
@@ -151,7 +152,9 @@ function HeaderComponent() {
                     {alwaysVisibleContent}
                 </div>
                 <div className="nav-section right">
-                    {/* Aquí irían los enlaces si los tuvieras, se mantienen en ambos estados */}
+                    <NavLink to="/cart" className="header-cart-link" aria-label="Ir al carrito">
+                        <ShoppingCart size={24} />
+                    </NavLink>
                 </div>
 
                 {/* --- SIDEBAR OVERLAY Y CONTENEDOR --- */}
@@ -194,11 +197,8 @@ function HeaderComponent() {
                                 <NavLink to="/home" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
                                     <span className="link-num">-</span> Inicio
                                 </NavLink>
-                                <NavLink to="/" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
+                                <NavLink to="/catalog" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
                                     <span className="link-num text-accent">-</span> Catálogo
-                                </NavLink>
-                                <NavLink to="/modelado3d" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
-                                    <span className="link-num">-</span> Modelos 3D
                                 </NavLink>
                             </nav>
 

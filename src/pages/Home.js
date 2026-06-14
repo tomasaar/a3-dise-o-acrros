@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from
 import { Link } from 'react-router-dom';
 import { motion, animate } from 'framer-motion';
 import './Home.css'; 
+import Header from '../components/Header';
 import slide1 from '../assets/banner1.png';
 import slide2 from '../assets/banner2.jpg';
 import slide3 from '../assets/banner3.jpg';
@@ -281,6 +282,9 @@ function Home() {
 
     // Estado para el Slider de Highlights
     const [highlightIndex, setHighlightIndex] = useState(0);
+    // Newsletter state (accesibilidad y validación básica)
+    const [newsletterEmail, setNewsletterEmail] = useState('');
+    const [newsletterMsg, setNewsletterMsg] = useState(null);
     // const [, setHighlightDirection] = useState(0); // No es necesario para el carrusel 3D
 
     const paginateHighlights = (newDirection) => {
@@ -376,6 +380,8 @@ function Home() {
         const container = containerRef.current;
 
         if (exploreSection && container) {
+            // Notificar al Header que se ha pulsado 'Explorar' (para forzar reanimación si procede)
+            window.dispatchEvent(new CustomEvent('homeExploreClick'));
             // 1. Permitimos que el contenedor pueda hacer scroll.
             setIsScrollLocked(false);
 
@@ -404,6 +410,18 @@ function Home() {
         }
     }
 
+    function handleSubscribe(e) {
+        e.preventDefault();
+        const email = newsletterEmail.trim();
+        const re = /^\S+@\S+\.\S+$/;
+        if (!re.test(email)) {
+            setNewsletterMsg({ type: 'error', text: 'Introduce un correo válido.' });
+            return;
+        }
+        setNewsletterMsg({ type: 'success', text: 'Gracias por suscribirte.' });
+        setNewsletterEmail('');
+    }
+
     return (
         <motion.div
             className={`home-container ${isScrollLocked ? 'scroll-locked' : ''}`}
@@ -413,6 +431,7 @@ function Home() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
         >
+            <Header />
             {/* Contenedor principal del carrusel */}
             {showCarousel && (
                 <main className="carousel-container">
@@ -424,26 +443,30 @@ function Home() {
                         />
                     ))}
 
-                    <div className="carousel-arrows">
-                        <button className="arrow arrow-left" onClick={() => changeSlide(-1)}>
-                            <ArrowLeft />
-                        </button>
-                        <button className="arrow arrow-right" onClick={() => changeSlide(1)}>
-                            <ArrowRight />
-                        </button>
-                    </div>
+                        <div className="carousel-arrows">
+                            <button aria-label="Slide anterior" className="arrow arrow-left" onClick={() => changeSlide(-1)}>
+                                <ArrowLeft />
+                            </button>
+                            <button aria-label="Slide siguiente" className="arrow arrow-right" onClick={() => changeSlide(1)}>
+                                <ArrowRight />
+                            </button>
+                        </div>
 
                     <div className="carousel-controls">
                         {slidesContent.map((_, index) => (
                             <div 
                                 key={index}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`Ir al slide ${index + 1}`}
                                 className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
                                 onClick={() => goToSlide(index)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') goToSlide(index); }}
                             ></div>
                         ))}
                     </div>
 
-                    <div className="scroll-indicator" id="scrollIndicator" onClick={scrollToExplore}>
+                    <div className="scroll-indicator" id="scrollIndicator" role="button" tabIndex={0} aria-label="Explorar sección" onClick={scrollToExplore} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') scrollToExplore(); }}>
                         <span className="scroll-indicator-text">Explorar</span>
                         <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" fill="currentColor"/></svg>
                     </div>
@@ -630,14 +653,24 @@ function Home() {
 
                             <div className="footer-newsletter-modern">
                                 <h4 className="footer-newsletter-title">Únete al Inner Circle</h4>
-                                <div className="newsletter-input-wrapper">
+                                <form className="newsletter-input-wrapper" onSubmit={handleSubscribe} aria-label="Formulario de suscripción al boletín">
                                     <input 
+                                        id="newsletterEmail"
                                         type="email" 
                                         placeholder="Tu correo electrónico" 
                                         className="newsletter-input"
+                                        value={newsletterEmail}
+                                        onChange={(e) => setNewsletterEmail(e.target.value)}
+                                        aria-label="Correo electrónico"
+                                        required
                                     />
-                                    <button className="newsletter-submit-btn">→</button>
-                                </div>
+                                    <button aria-label="Enviar suscripción" className="newsletter-submit-btn" onClick={handleSubscribe}>→</button>
+                                </form>
+                                {newsletterMsg && (
+                                    <div className={`newsletter-msg ${newsletterMsg.type === 'error' ? 'error' : 'success'}`} role="status">
+                                        {newsletterMsg.text}
+                                    </div>
+                                )}
                             </div>
                         </div>
 

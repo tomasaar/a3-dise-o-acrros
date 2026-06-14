@@ -1,13 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import React, { memo, useEffect, lazy, Suspense } from 'react';
+import React, { memo, useEffect } from 'react';
 import Home from './pages/Home';
 import Catalog from './pages/Catalog';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 import Navbar from './components/Header';
-import ThemeFloating from './components/ThemeFloating';
 import './App.css';
 
-const Modelado3d = lazy(() => import('./pages/Modelado3d'));
 
 const AnimatedRoutes = memo(function AnimatedRoutes() {
   const location = useLocation();
@@ -19,14 +20,9 @@ const AnimatedRoutes = memo(function AnimatedRoutes() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/catalog" element={<Catalog />} />
-        <Route
-          path="/modelado3d"
-          element={
-            <Suspense fallback={<div style={{padding:20}}>Cargando experiencia 3D…</div>}>
-              <Modelado3d />
-            </Suspense>
-          }
-        />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/configuracion" element={<Home />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
@@ -50,7 +46,6 @@ const AppContent = memo(function AppContent() {
     <div className="app-container">
       <Navbar />
       <AnimatedRoutes />
-      <ThemeFloating />
     </div>
   );
 });

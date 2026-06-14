@@ -131,6 +131,18 @@ button:focus, button:active {
     transition: background 0.6s ease, box-shadow 0.6s ease, border-bottom 0.6s ease, border-radius 0.6s ease;
 }
 
+/* Mejor visibilidad del botón carrito sobre el hero (header transparente) */
+.navbar.transparent-on-top .header-cart-link {
+  background: linear-gradient(135deg, #1e90ff, #0ea5ff);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(14, 122, 255, 0.18);
+}
+
+.navbar.transparent-on-top .header-cart-link svg {
+  color: #ffffff;
+  stroke: #ffffff;
+}
+
 /* 2. Asegurar que los elementos clave sean visibles sobre el banner */
 /* Hacemos el texto de la marca y el icono más brillantes o de un color que contraste con el fondo oscuro del carrusel */
 
@@ -174,6 +186,29 @@ button:focus, button:active {
 
 .nav-section.right {
   justify-content: flex-end;
+}
+
+.header-cart-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(33, 101, 131, 0.08);
+  color: var(--text-primary);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.header-cart-link:hover,
+.header-cart-link:focus-visible {
+  background: rgba(33, 101, 131, 0.18);
+  transform: translateY(-1px);
+}
+
+.header-cart-link svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Estilo para los enlaces normales */

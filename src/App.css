@@ -22,3 +22,13 @@ body, html {
   overflow-x: hidden; /* Evita el scroll horizontal */
   box-sizing: border-box; /* Incluye padding y border en el tamaño total */
 }
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(67, 187, 133, 0.9);
+  outline-offset: 3px;
+}
