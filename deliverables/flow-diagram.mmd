@@ -4,7 +4,9 @@ flowchart TD
     Filter[Filtros: categoría / precio / talla / modelo]
     Results[Resultados filtrados]
     Product[Detalle de producto]
-    Size[Seleccionar talla]
+    Size[Seleccionar talla y color]
+    ColorOK[Color y talla seleccionados]
+    NoSelect[Sin selección]
     Cart[Carrito]
     Adjust[Ajustar cantidad]
     Checkout[Checkout]
@@ -17,7 +19,10 @@ flowchart TD
     Filter --> Results
     Results --> Product
     Product --> Size
-    Size --> Cart
+    Size --> |Validado| ColorOK
+    Size --> |Falta selección| NoSelect
+    NoSelect --> |Botón deshabilitado| Product
+    ColorOK --> Cart
     Cart --> Adjust
     Cart --> Checkout
     Checkout --> Validation
